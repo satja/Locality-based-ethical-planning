@@ -1,0 +1,93 @@
+on1, on2, on3, on4, on5, on6, on7, on8, on9, on10, on11, on12, on13, on14, on15, broken1, broken2, broken3, broken4, broken5, broken6, broken7, broken8, broken9, broken10, broken11, broken12, broken13, broken14, broken15
+congestion
+TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE
+FALSE
+- f2 broken2 : NOT (on1) OR (NOT (on3))
++ f2 on2 : NOT (on1) OR (NOT (on3))
++ f2 congestion : NOT (on1) AND (NOT (on3))
+- f3 broken3 : NOT (on2) OR (NOT (on4))
++ f3 on3 : NOT (on2) OR (NOT (on4))
++ f3 congestion : NOT (on2) AND (NOT (on4))
+- f4 broken4 : NOT (on3) OR (NOT (on5))
++ f4 on4 : NOT (on3) OR (NOT (on5))
++ f4 congestion : NOT (on3) AND (NOT (on5))
+- f5 broken5 : NOT (on4) OR (NOT (on6))
++ f5 on5 : NOT (on4) OR (NOT (on6))
++ f5 congestion : NOT (on4) AND (NOT (on6))
+- f6 broken6 : NOT (on5) OR (NOT (on7))
++ f6 on6 : NOT (on5) OR (NOT (on7))
++ f6 congestion : NOT (on5) AND (NOT (on7))
+- f7 broken7 : NOT (on6) OR (NOT (on8))
++ f7 on7 : NOT (on6) OR (NOT (on8))
++ f7 congestion : NOT (on6) AND (NOT (on8))
+- f8 broken8 : NOT (on7) OR (NOT (on9))
++ f8 on8 : NOT (on7) OR (NOT (on9))
++ f8 congestion : NOT (on7) AND (NOT (on9))
+- f9 broken9 : NOT (on8) OR (NOT (on10))
++ f9 on9 : NOT (on8) OR (NOT (on10))
++ f9 congestion : NOT (on8) AND (NOT (on10))
+- f10 broken10 : NOT (on9) OR (NOT (on11))
++ f10 on10 : NOT (on9) OR (NOT (on11))
++ f10 congestion : NOT (on9) AND (NOT (on11))
+- f11 broken11 : NOT (on10) OR (NOT (on12))
++ f11 on11 : NOT (on10) OR (NOT (on12))
++ f11 congestion : NOT (on10) AND (NOT (on12))
+- f12 broken12 : NOT (on11) OR (NOT (on13))
++ f12 on12 : NOT (on11) OR (NOT (on13))
++ f12 congestion : NOT (on11) AND (NOT (on13))
+- f13 broken13 : NOT (on12) OR (NOT (on14))
++ f13 on13 : NOT (on12) OR (NOT (on14))
++ f13 congestion : NOT (on12) AND (NOT (on14))
+- f14 broken14 : NOT (on13) OR (NOT (on15))
++ f14 on14 : NOT (on13) OR (NOT (on15))
++ f14 congestion : NOT (on13) AND (NOT (on15))
+- f1 broken1 : TRUE
+- f15 broken15 : TRUE
++ f1 on1 : TRUE
++ f15 on15 : TRUE
+- g1 on1 : TRUE
+- g2 on2 : TRUE
+- g3 on3 : TRUE
+- g4 on4 : TRUE
+- g5 on5 : TRUE
+- g6 on6 : TRUE
+- g7 on7 : TRUE
+- g8 on8 : TRUE
+- g9 on9 : TRUE
+- g10 on10 : TRUE
+- g11 on11 : TRUE
+- g12 on12 : TRUE
+- g13 on13 : TRUE
+- g14 on14 : TRUE
+- g15 on15 : TRUE
++ h1 on1 : NOT (broken1)
++ h2 on2 : NOT (broken2)
++ h3 on3 : NOT (broken3)
++ h4 on4 : NOT (broken4)
++ h5 on5 : NOT (broken5)
++ h6 on6 : NOT (broken6)
++ h7 on7 : NOT (broken7)
++ h8 on8 : NOT (broken8)
++ h9 on9 : NOT (broken9)
++ h10 on10 : NOT (broken10)
++ h11 on11 : NOT (broken11)
++ h12 on12 : NOT (broken12)
++ h13 on13 : NOT (broken13)
++ h14 on14 : NOT (broken14)
++ h15 on15 : NOT (broken15)
+l : ( FG (on1))
+l : ( FG (on2))
+l : ( FG (on3))
+l : ( FG (on4))
+l : ( FG (on5))
+l : ( FG (on6))
+l : ( FG (on7))
+l : ( FG (on8))
+l : ( FG (on9))
+l : ( FG (on10))
+l : ( FG (on11))
+l : ( FG (on12))
+l : ( FG (on13))
+l : ( FG (on14))
+l : ( FG (on15))
+g : ( G ( NOT (congestion)))

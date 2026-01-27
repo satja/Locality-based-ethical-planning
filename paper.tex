@@ -1,0 +1,814 @@
+%% This is a JAIR Example File Compiled by Nicholas Mattei (nsmattei@tulane.edu) 
+%% and Odd Erik Gundersen (odderik@ntnu.no)
+%% and Mykel Kochenderfer (mykel@stanford.edu)
+%% September 15, 2025
+%%
+%% This file is based off the ACM Latex Template https://www.acm.org/publications/proceedings-template
+%% Revision 2.12 (12/28/2024)
+%% 
+%% Please see https://www.jair.org/index.php/jair for more information and submission instructions.
+%%
+
+%% The first command in your LaTeX source must be the \documentclass
+%% command.
+%%
+%% For submission and review of your manuscript please change the
+%% command to \documentclass[manuscript, screen, review]{jair}.
+%%
+\documentclass[]{jair}
+
+\usepackage[T1]{fontenc}
+\usepackage{url}
+\usepackage{algorithm,algpseudocode}
+\usepackage{amsthm}
+\newtheorem{Theorem}{Theorem}
+\newtheorem{Definition}{Definition}
+
+\setcopyright{cc}
+\copyrightyear{2025}
+\acmDOI{10.1613/jair.1.xxxxx}
+
+%%
+\JAIRAE{Insert JAIR AE Name}
+\JAIRTrack{} % Insert JAIR Track Name only if part of a special track
+\acmVolume{4}
+\acmArticle{6}
+\acmMonth{8}
+\acmYear{2025}
+
+\RequirePackage[
+  datamodel=acmdatamodel,
+  style=acmauthoryear,
+  backend=biber,
+  giveninits=true,
+  uniquename=init
+  ]{biblatex}
+
+\renewcommand*{\bibopenbracket}{(}
+\renewcommand*{\bibclosebracket}{)}
+
+%%
+%% For managing citations, use BibLaTeX with the acmauthoryear style.
+%% The next line specifies the bibliography file.
+\addbibresource{references.bib}
+
+%%
+%% end of the preamble, start of the body of the document source.
+\begin{document}
+
+%%
+%% The "title" command has an optional parameter,
+%% allowing the author to define a "short title" to be used in page headers.
+%\title{JAIR Example Template}
+\title[LTLplanning]{Locality-based moral planning with linear temporal logic values}
+
+%%
+%% The "author" command and its associated commands are used to define
+%% the authors and their affiliations.
+%% Of note is the shared affiliation of the first two authors, and the
+%% "authornote" and "authornotemark" commands
+%% used to denote shared contribution to the research and/or corresponding author.
+
+
+\author{Adrian Satja Kurdija}
+\authornote{Corresponding Author.}
+\orcid{0000-0003-2313-0396}
+\email{adrian.kurdija@fer.unizg.hr}
+\affiliation{%
+  \institution{Faculty of Electrical Engineering and Computing, University of Zagreb}
+  \city{Zagreb}
+  \country{Croatia}
+}
+
+\author{Matej Mihel\v{c}i\'{c}}
+\orcid{0000-0002-1023-8413}
+\email{matmih@math.hr}
+\affiliation{%
+  \institution{Department of Mathematics, Faculty of Science, University of Zagreb }
+  \city{Zagreb}
+  \country{Croatia} 
+  }
+  \email{matej.mihelcic@irb.hr}
+\affiliation{%
+  \institution{Department of Electronics, Ru\dj er Bošković Institute }
+  \city{Zagreb}
+  \country{Croatia} 
+  }
+
+%% The short list of authors must be made of the list of all authors' lastnames.
+\renewcommand{\shortauthors}{Kurdija and Mihelčić}
+%% If this is too long and overlaps other information printed in the page headers, use
+%\renewcommand{\shortauthors}{Xu et al.}
+
+%%
+%% The abstract is a short summary of the work to be presented in the
+%% article.
+\begin{abstract}
+Linear Temporal Logic (LTL) enables specifying expressive, complex constraints over sequences of actions.  A framework for logic-based ethical planning with intended application to robotics was introduced by Grandi et al. in 2022. There, several planning tasks have been shown to be intractable (PSPACE-complete). Using additional assumptions at the cost of generality, we define a constrained version of the CONFLICT problem that is polynomially solvable and present the algorithm that solves it. Motivated from various real-world examples such as robots operating in linear trajectories, we assume that most propositions are {\it localized} in the following sense: there is an ordering of the localized propositions such that each action depends on, and changes, only the propositions from an interval of bounded length. In addition, there is a constant number of {\it global} propositions for which there are no such constraints: any action can use or change their truth values. We additionally assume that the local ordering of propositions constrains the temporal order of actions. Under these assumptions, CONFLICT can be solved in polynomial time. The proposed framework can be instrumental in cases were problems require complex spatial robot movement on linear trajectories, especially if work is performed in the presence of humans. Potential collision of a robot with a human could cause serious injury or fatality. Thus, both  expressiveness of constraints, affecting choices of the robot's future actions, and speed of their evaluation are crucial to provide proper reactions in unpredictable working environment.
+\end{abstract}
+
+%\begin{abstract}
+%      A clear and well-documented \LaTeX\ document is presented as an
+%  article formatted for publication by ACM in a conference proceedings
+%  or journal publication. Based on the ``acmart'' document class, this
+%  article presents and explains many of the common variations, as well
+%  as many of the formatting elements an author may use in the
+%  preparation of the documentation of their work.
+%\end{abstract}
+
+
+%% JAIR Note: 
+%% Do not include ACM CCS Concepts or Keywords
+
+
+%% To be updated by authors.
+\received{}
+\received[accepted]{}
+
+%%
+%% This command processes the author and affiliation and title
+%% information and builds the first part of the formatted document.
+\maketitle
+
+\section{Introduction}
+
+Planning is crucial for autonomous systems like robotics. A framework for logic-based ethical planning with intended application to robotics was introduced by Grandi et al. \cite{grandi2022logic}. For a key problem, which is to ensure that actions of an agent align with multiple predefined (moral or other) values, linear temporal logic is used to represent values and determine feasible action plans. Evaluation criteria for individual plans were proposed in \cite{grandi2023moral}. General propositional planning problems (ie, PLANSAT) are known to be PSPACE-complete \cite{BYLANDER1994165}, as well as the problem of moral conflict as defined in Grandi et al. \cite{grandi2022logic}. In this work we introduce locality-based constraints of actions and propositions to reduce the search space and computational complexity. 
+
+Linear Temporal Logic (LTL) enables specifying constraints over sequences of actions \cite{10.5555/975331}.
+A set of moral values $\Omega$ consists of LTL formulas \cite{4567924} that describe temporal properties of atomic propositions (evaluated under some history $H$) using operators such as negation ($\neg \phi$), conjuction ($\phi_1\land \phi_2$), "next" ($X\phi$), "until" ($\phi_1 \sf{U} \phi_2$), "henceforth" ($G\phi$), and "eventually" ($F\phi$). For a given moral problem consiting of moral values $\Omega$, action theory $\gamma$, and an initial state $s_0$, the CONFLICT problem asks if there is an action plan $\pi$ satisfiying all values from $\Omega$. If there is no such action plan, some values have to be broken, so tradeoffs between values have to be accounted for, which explains the name {\it moral conflict}. However, we note that the concerned values do not have to be ethical/moral in the strict sense of the word. We decided to follow the previous terminology while keeping in mind the generality of the approach.
+
+
+Grandi et al. \cite{grandi2022logic} have shown that several planning tasks are intractable (PSPACE-complete). Namely, CONFLICT is shown to be PSPACE-complete using reduction from the propositional STRIPS planning problem called PLANSAT \cite{BYLANDER1994165}. The difficulty of the problem arises from the exponential number of possible plans.
+Using additional assumptions at the cost of generality, we define a constrained version of the CONFLICT problem and present the algorithm to solve it. Namely, to enable polynomial complexity, we restrict actions to affect only a local set of propositions. 
+
+Such restricted, but computationally efficient setting allows modelling a plethora of real-world scenarios involving planning. One example includes utilizing propositions to express properties involving linear space order. Many robots involved in repairs or manufacturing adhere to such constraints (e.g. robots used to pick and pack food in the factories, gantry robots used in automotive industry, some robots dispatching pallets in the warehouses, in electronic chip manufacturing or pharmaceutical industry in drug production). Utilizing proposed logic, these robots could move back and forth satisfying expressive, complex constraints. One important constraint is not to harm human workers that might cross the path of the traversing robots. This shows the importance of having the possibility to add moral constraints in the planning process  to create safe, flexible and efficient robots.    
+%dodati motivaciju + zadatke
+
+
+The paper is organized as follows. Sect. \ref{related} describes the related work. In Sect. \ref{lbp} we describe the framework and the proposed algorithm. In Sect. \ref{example} we present an example. Conclusions are given in Sect. \ref{conc}.
+\section{Related Work}\label{related}
+
+Logic-based temporal planning has previously been studied in the context of robotics and autonomous systems. Various approaches have been used to address uncertainty, efficiency, and fairness in decision-making. Significant focus has been on using LTL, as well as probabilistic temporal logic \cite{konur2011realtimeprobabilistictemporallogics}, to define and schedule complex tasks in dynamic and uncertain environments. 
+Earlier work such as \cite{fainekos2009temporal} investigated temporal logic motion planning for dynamic robots, formulating a hierarchical approach that integrates motion tracking and formal logic specifications to satisfy high-level tasks. Research \cite{cai2024reinforcement} explored methods based on reinforcement learning (RL) to satisfy soft temporal logic constraints in environments where full compliance is not feasible due to motion uncertainties and environmental uncertainties.
+Some works have investigated probabilistic and reactive planning frameworks. Yoo et al. \cite{yoo2013probabilistic} introduced a probabilistic computation tree logic (PCTL) extension to incorporate resource constraints in motion planning, while Cai et al. \cite{cai2021probabilistic} developed a probabilistic LTL motion planning strategy that takes into account both environmental uncertainties and motion uncertainties. In contrast, Zhou et al. \cite{kan2024local} proposed local observation-based reactive temporal logic planning, focusing on real-time human-robot interactions.
+
+A related research area has been automated reasoning and decision-making for autonomous systems. Meli et al. \cite{melilogic} have employed logic programming to improve deliberative robotic task planning, allowing robots to efficiently evaluate and execute high-level actions.
+Meanwhile, Shea-Blymyer and Abbas \cite{10.1145/3460975} have formalized {\it algorithmic ethics} for autonomous systems, introducing a framework based on deontic logic \cite{von1951deontic} to satisfy regulatory and ethical constraints. Similarly, 
+ Liang and Vasile \cite{fairplanning} addressed concerns about fairness in Mobility-on-Demand systems by using fairness metrics based on temporal logic in decision-making algorithms.
+In recent work, the use of automata-based approaches has appeared, such as Toscano-Moreno et al. \cite{li2024spin} which proposed SPIN-based LTL path planning, utilizing model checking for efficient motion planning in environments with uneven terrain. Cai, Liu, Zhou, Ma, Zhao, Wu and Ma \cite{smith2024driving} proposed retrieval-augmented reasoning with Large Language Models (LLMs) to improve the interpretability of autonomous vehicle decision making.
+
+\section{Locality-Based Planning}\label{lbp}
+
+Section \ref{lbep} describes the relevant part of the framework defined in \cite{grandi2022logic}, Section \ref{aa} describes our additional assumptions and Section \ref{pa} describes the proposed algorithm.
+
+\subsection{Logic-Based Ethical Planning}\label{lbep}
+
+The world is described by atomic propositions $Prop=\{p_1, \dots, p_n\}$.
+Their Boolean truth values are represented as a state $s\in 2^{Prop}$ which
+consists of all propositions that are true at a given moment.
+
+Linear Temporal Logic over Finite Traces, noted as \( LTL_{f} \), is a temporal logic used to represent an agent's values and goals over finite traces. \( LTL_{f} \) includes the operators from classical linear temporal logic such as "next" (\( X \)) and "until" (\( U \)), allowing for expressions about the progression of time and the satisfaction of certain conditions. Additionally, the standard operators "henceforth" (\( G \)) and "eventually" (\( F \)) are defined as \( G\varphi := \neg(\top U \varphi) \) and \( F\varphi := \neg G \neg \varphi \). Formally, the grammar of \( LTL_{f} \) is defined as follows ($p\in Prop$):
+\begin{equation}
+    \varphi ::= p \mid \neg \varphi \mid \varphi_1 \land \varphi_2 \mid X \varphi \mid \varphi_1 U \varphi_2 \mid G \varphi \mid F \varphi.
+\end{equation}
+
+In this paper, we expand the language with additional logical operators in $LTL_f$, defined as follows:
+\begin{equation}
+\varphi \lor \psi \equiv \neg(\neg \varphi \land \neg \psi), \quad
+\varphi \to \psi \equiv \neg \varphi \lor \psi.
+\end{equation}
+
+There is a set $Act$ of {\it actions} and each action $a\in Act$ can change values of some propositions
+according to the corresponding preconditions. Formally, we define {\it action theory} as a pair of functions
+\begin{equation}\gamma^+, \gamma^- : Act \times Prop \to \mathcal{L}_{PL},\end{equation}
+where $\mathcal{L}_{PL}$ is the propositional logic fragment of $LTL_f$.
+These functions represent preconditions for the actions. Namely,
+after action $a$, proposition $p$ becomes true if the precondition $\gamma^+(a, p)$ is true,
+and false if the precondition $\gamma^-(a, p)$ is true. However, if neither or both preconditions are true,
+the truth value of $p$ will not change after action $a$. These rules will be formalized in Eq. \eqref{h}.
+
+A sequence of actions $\pi = (a_1, \dots, a_k)$ is called {\it action plan}.
+
+The described rules of action theory allow us to define a {\it history} $H(\pi, s_0, \gamma)$
+generated by an action plan $\pi$ from an initial state $s_0$
+under action theory $\gamma$. Namely, $H(\pi, s_0, \gamma)$
+is a sequence of states $H_0$, $H_1$, $H_2$, $\dots$, $H_k\in 2^{Prop}$ with $H_0=s_0$. To define how $H_t$ transforms
+into $H_{t+1}$, we first define the $\models$ relation: we say that $H, t \models \varphi$ if the formula \( \varphi\in LTL_f \) holds at time point $t$ in the history \( H \). More specifically,
+\begin{itemize}
+    \item \( H, t \models p \iff p \in H_{t} \)  for atomic propositions $p\in Prop$.
+    \item \( H, t \models \neg \varphi \iff H, t \not\models \varphi \).
+    \item \( H, t \models \varphi_1 \land \varphi_2 \iff H, t \models \varphi_1 \) and \( H, t \models \varphi_2 \).
+    \item \( H, t \models X \varphi \iff H, t+1 \models \varphi \) (ie, \( \varphi \) holds in the next state).
+    \item \( H, t \models \varphi_1 U \varphi_2 \iff \) there exists a time \( t' \geq t \) such that \( H, t' \models \varphi_2 \) and for all \( t'' \) with \( t \leq t'' < t' \) it holds that \( H, t'' \models \varphi_1 \) (ie, \( \varphi_1 \) holds until \( \varphi_2 \) becomes true).
+    \item \( H, t \models F \varphi \iff \) there exists a time \( t' \geq t \) such that \( H, t' \models \varphi \) (ie, \( \varphi \) holds at some future point, {\it eventually}).
+    \item \( H, t \models G \varphi \iff \) for all \( t' \geq t \) it holds that \( H, t' \models \varphi \) (ie, \( \varphi \) holds at every point in the future, {\it henceforth}). %In particular, $H,0\models G\varphi$ means that $\varphi$ {\it always} holds.
+\end{itemize}
+
+Now, for each action \( a_t \in \pi \) and corresponding time \( t \), the next state \( H_{t+1} \) is determined according to the action theory \( \gamma \) by updating the propositions in \( H_t \) based on the effects of the action \( a_t \):
+\begin{equation}\label{h}
+\begin{aligned}
+H_{t+1} = \bigg( H_{t} \setminus \{ p \in \mathit{Prop} : H_{t} \models \gamma^-(a_t, p) \} \bigg) \cup \{ p \in \mathit{Prop} : H_{t} \models \gamma^+(a_t, p) \}.
+\end{aligned}
+\end{equation}
+
+Here, for each proposition $p$, we keep or change its truth value based on \( \gamma^+(a_t, p) \) and \( \gamma^-(a_t, p) \), the positive and negative effect preconditions associated with action \( a_t \).
+
+A set of moral values is given by $\Omega\subseteq LTL_f$.
+We say that a given moral problem, defined as a triple $\mathcal{M}=(\Omega, \gamma, s_0)$, 
+is a moral conflict if there is no satisfactory action plan. Formaly, $\mathcal{M}\in CONFLICT$
+if there is no action plan $\pi$ such that the history $H(\pi, s_0, \gamma)$ satisfies all values
+from $\Omega$. Formally, an action plan $\pi$ is satisfactory if
+\begin{equation}
+\forall \varphi \in \Omega, \, \ H(\pi, s_0, \gamma), 0 \models \varphi.
+\end{equation}
+For example,
+\begin{itemize}
+    \item $H, 0\models p$ when $p\in s_0$,
+    \item $H, 0\models Fp$ when $p$ is {\it eventually} satisfied,
+    \item $H, 0\models Gp$ when $p$ is {\it always} satisfied,
+    \item $H, 0\models FGp$ when $p$ is {\it ultimately} satisfied, ie, it holds in the last state.
+\end{itemize}
+If there is no such action plan, some values have to be broken, so tradeoffs between values have to be accounted for, which explains the name {\it moral conflict}.
+
+ Grandi et al. \cite{grandi2022logic} showed that CONFLICT is PSPACE-complete using reduction from the propositional STRIPS planning problem called PLANSAT \cite{BYLANDER1994165}. This means that in the general case,
+ the space of all action plans cannot be efficiently searched in order to find a plan satisfying $\Omega$.
+
+\subsection{Locality-Based Moral Conflict}\label{aa}
+
+Our contribution lies in restricting CONFLICT to a polynomially solvable variant using additional assumptions that reduce its generality without sacrificing too much of its practical use. Motivated from various real-world examples concerning planning in what is essentially a 1D or 2D space (roads, warehouses), such as the example in Sect. \ref{ex1}, we assume that most propositions -- all except for a constant number of them -- are localized. Formaly, we introduce locality as the mapping 
+\begin{equation}
+    loc: Prop \to \{0,1, \dots, n\},\  
+\end{equation}
+where locations $1, \dots, n$ represent positions of the {\it local} propositions ($loc(p)>0$),
+while the propositions with $loc(p)=0$ are considered {\it global}.
+To limit the search space, we posit that there are at most $M$ global propositions and at most $M$
+propositions at each position:
+\begin{equation}
+    \forall i\in\{0,1,\dots,n\},\quad |p\in Prop \; : \; loc(p)=i|\le M.
+\end{equation}
+
+Each action $a$ depends on, and changes, only the propositions from an interval of at most $L$ locations,
+along with any global propositions. This local interval depends on the action. 
+To formalize this constraint, we first define $\mathcal{L}_{PL}^{i, j}$ as a fragment of $\mathcal{L}_{PL}$
+containing only propositions $p\in Prop$ such that $loc(p)=0$ or $i\le loc(p)\le j$.
+Now, for each action $a\in Act$, we assume that there are natural constants $l(a)$ and $r(a)$, representing the left and right action boundaries, such that: 
+\begin{equation}
+\begin{aligned}1\le l(a) \le r(a) \le n, \\ r(a)-l(a)< L,\\
+\gamma^+(a, p_i),\,\gamma^-(a, p_i)\in \mathcal{L}_{PL}^{l(a), r(a)}, \quad & \forall i\in[l(a),r(a)],\\
+\gamma^+(a, p_i)=\gamma^-(a, p_i)=\bot, \quad & \forall i\in [1,n]\setminus[l(a),r(a)].\end{aligned}\end{equation}
+Therefore, only the propositions from $\mathcal{L}_{PL}^{l(a), r(a)}$ can be changed by or participate in the preconditions for action $a$.
+
+Additionally, we assume that the local ordering of propositions constrains the temporal order of actions.
+Informally, the temporal order of actions is roughly left-to-right with allowed deviations.
+If the actions' intervals are sufficiently apart, the action on the first interval must be performed before the action on the second. Formally, if $r(b)-l(a)\ge 2L$, then action $a$ cannot be performed after action $b$.
+A larger value of $L$ permits more flexibility in the order of actions.
+In terms of the action plan $\pi = (a_1, \dots, a_k)$ this condition can be written as
+\begin{equation}r(a_j)-l(a_i)\ge 2L \implies i<j.\label{k}\end{equation}
+
+The final constraint is that the value set $\Omega$ contains only formulas with at most one of the operators
+$F$, $G$, $FG$, or $U$, operating on a propositional logic formula containing at most $K$ atomic propositions, % (or their negations),
+either all local, or all global. In the local case, the absolute difference between their indices can be at most $L$.
+
+The integers $K$, $L$, $M$ are introduced as fixed constants to limit the search space,
+and therefore the algorithm complexity. As a reminder,
+$K$ is the maximum number of propositions in each value formula,
+$L$ is the maximum number of local propositions each action can influence,
+and $M$ is the maximum number of global propositions and propositions at each location.
+For simplicity of complexity analysis, we will assume that $K, L= O(M)$.
+
+\subsection{Proposed Algorithm}\label{pa}
+
+Under the above assumptions, CONFLICT can be solved in polynomial time. 
+The basic idea stems from the temporal constraint:
+    $$r(b)-l(a)\ge 2L \implies a \text{ precedes } b,$$ which means
+that if action \( a \) uses/changes \( p_i \),
+this action precedes all actions \( b \) such that \( r(b) \geq i + 2L \).
+Thus, while performing an action plan, we do not need to keep track of "distant" propositions.
+We only need to keep track of the truth values of the current $2L$-lenght interval of 
+interval of local propositions (called {\it mutable})
+and move it left-to-right, along with the global propositions.
+The algorithm searches for a path over these substates and the number of such substates is linear in $n$. 
+
+To be able to check the validity of formulas with several local propositions, we must additionally keep track of {\it recent} local propositions (for which $loc(p)\in\langle i-L,i]$) to the left of the currently {\it mutable} interval $[i+1, i+2L]$. The truth value of the recent propositions can no longer be changed, but can play a role in validating (or invalidating) formulas where at least one proposition does belong to the mutable interval.
+
+    Therefore, the {\it substate} should contain a truth assignment of an interval of local propositions (from $2L$ mutable and $L$ recent locations) and all global propositions. These propositions of a substate are called {\it active}. There is at most $(3L+1)M$ active propositions in a given substate.
+    Additionally, to keep track of temporal values (ie, until and eventually), 
+the substate also contains the set of already satisfied such values composed of the active propositions.
+Let us formalize all of the above notions.
+
+\begin{Definition}
+    A {\bf substate} is a triple $S=(i, T, \Theta)$ defined by:
+\begin{itemize}
+    \item the leading index $i\in [0, n-2L]$ of the mutable interval of local propositions,
+    \item the set $T$ of currently true active propositions, where {\it active} means global, mutable, or recent: $loc(p)=0$, $loc(p)\in[i+1,i+2L]$, or $loc(p)\in[\max(1, i-L+1), i]$,
+    \item the set $\Theta \subseteq \Omega$ of already satisfied formulas of the form $\psi_1 U \psi_2$ or $F\psi$, where $\psi$, $\psi_1$, $\psi_2$ are propositional logic formulas containing only active propositions.
+\end{itemize}
+\end{Definition}
+
+%We will sometimes write $i(S)$, $T(S)$, $\Theta(S)$ to specify the components of substate $S$.
+%Since the number of active propositions is $3L+M$ or $O(M)$, the cardinality of $\Theta$ is $O(M^K)$.
+By multiplying the number of possible choices for each component of $S$, 
+the number of substates is $O(n)$ (for the choice of the leading index) with the large constant factor for the choice of other components, dominated by $O(2^{2^M})$ which is the number of formulas in $\Omega$ containing only active propositions
+(the maximal cardinality of $\Theta$).
+
+Assume we are given a CONFLICT instance $\mathcal{M}=(\Omega, \gamma, s_o)$ with assumptions from the previous subsection.  We will say that a {\it global} proposition $q$ is {\it valid} in a substate $S$ if, informally,
+all values in $\Omega$ containing $q$ are satisfied. 
+
+\begin{Definition}\label{gval}
+A global proposition $q$ ($loc(q)=0$) is {\bf valid} in a substate $S = (i, T, \Theta)$ if the following conditions are true for all propositional logic formulas $\psi$ containing $q$:
+\begin{itemize}
+    \item $FG\psi\in\Omega\implies T\models \psi$, 
+    \item $F\psi\in\Omega\implies F\psi\in \Theta$,
+    \item $\psi_1 U \psi_2\in\Omega\implies \psi_1 U \psi_2\in \Theta$.
+\end{itemize}
+\end{Definition}
+
+Using this definition, the validity of values containing global propositions can be tested in the final substate: the validity of $FG\psi$ formulas depends on this final state ($T$), 
+and for $F\psi$ and $\psi_1 U\psi_2$ formulas we check if they have been satisfied at some previous point ($\Theta$).
+
+On the other hand, the validity of a value containing local propositions is tested when all propositions in the value formula exit the mutable interval, since from that point their truth values cannot be changed. 
+Therefore, we say that a local proposition $p$ is valid in a substate if all values in $\Omega$ containing $p$ and its left (recent) propositions are satisfied.
+
+\begin{Definition}\label{lval}
+    A local proposition $p$ ($loc(p)>0$) is {\bf valid} in a substate $S = (i, T, \Theta)$ if the same three conditions as above (Def. \ref{gval}) are true for all propositional logic formulas $\psi$ such that $\psi$ contains $p$ and every other local proposition $p'$ in $\psi$ is recent ($loc(p')\in [i-L+1, i]$).
+\end{Definition}
+
+%We note that the conditions above do not include values of the form $p$ or $\neg p$, which concern the initial state: for them, we simply check if $p\in s_0$ and return false if the value is not satisfied.
+
+To verify other types of values such as $G\psi$, we posit that a substate must not invalidate any such formula.
+
+\begin{Definition}\label{invalid}
+A substate $S = (i, T, \Theta)$ is {\bf invalid} if there is a propositional logic formula
+containing only active propositions such that any of the following is true: 
+\begin{itemize}
+    \item $G\psi\in\Omega\;\;\land\;\; T\not\models\psi$,
+    \item $\psi_1 U \psi_2 \in\Omega\;\;\land\;\; \psi_1 U\psi_2 \notin \Theta \;\;\land\;\; T\not\models \psi_1 \;\;\land\; \;T\not\models\psi_2$.
+\end{itemize}
+If a substate is not invalid, we say that it is {\bf valid}.
+\end{Definition}
+
+The formula $\psi_1 U \psi_2$ becomes satisfied and enters $\Theta$ when 
+$\psi_2\in T$, assuming that all previous substates were valid (which ensures that $\psi_1$ was true).
+The formula $F\psi$ enters $\Theta$ when $T\models \psi$.
+
+\begin{Definition}
+ Define the {\bf initial} substate $S_0$ as the substate $(i,T,\Theta)$ with $i=0$, 
+$T=s_0 \cap \{p\in Prop : loc(p)\le 2L\}$, and $\Theta\subseteq \Omega$ is the set of
+    formulas that are satisfied in the initial state $s_0$, have the form $\psi_1 U \psi_2$ or $F\psi$, and contain only active propositions ($loc(p)\le 2L$).
+\end{Definition}
+
+The algorithm that determines if $\mathcal{M}$ is a moral conflict consists in finding an appropriate sequence
+of substates which simulates a satisfactory action plan. The main idea is to change substates by applying actions that fit the current interval, and move to the next interval when no more actions apply to the left proposition of the interval. Let us formalize the requirements of such a path.
+
+\begin{Definition}\label{g}
+A directed graph $\mathcal{G(M)}$ (or simply $\mathcal{G}$)
+has all valid substates as vertices. We define the edges of $\mathcal{G}$ as follows.
+An edge from substate $S$ to substate $S'$ exists if any of the following two cases ("types" of edges) is satisfied.
+
+{\bf Type 1:} There is an action that changes $S$ to $S'$. Formally, there is an index $i$ such that $S=(i, T, \Theta)$ and $S'=(i, T', \Theta')$, and there exists $a\in Act$ such that:
+\begin{itemize}
+    \item $i+1 \le l(a) \le r(a) \le i+2L$,
+    \item \raisebox{-2ex}{\(
+        \begin{aligned}
+            T' = T \setminus \{ p\in Prop : T \models \gamma^-(a, p), \, loc(p)\in[l(a),r(a)]\cup\{0\} \} \\ \cup\,\{ p\in Prop : T \models \gamma^+(a, p), \, loc(p)\in[l(a),r(a)]\cup\{0\} \},\end{aligned}
+        \)}
+    \item $\Theta'$ is a union of $\Theta$ and the set of all values from $\Omega$ satisfied in $T'$ of the form $\psi_1 U \psi_2$ or $F\psi$, containing only active propositions.
+\end{itemize}
+
+{\bf Type 2:} Move right (increase the index). Formally, there is an index $i$ such that
+$S=(i-1, T, \Theta)$ and $S'=(i, T', \Theta')$, and
+\begin{itemize}
+    \item $T'=T\setminus\{p\in Prop : loc(p)=i-L\}\cup(s_0\cap\{p\in Prop : loc(p)=i+2L\})$,
+    \item $\Theta'$ is obtained by removing from $\Theta$ the formulas containing propositions $p$ with
+        $loc(p)=i-L$ and adding all values from $\Omega$ satisfied in $T'$ of the form $\psi_1 U \psi_2$ or $F\psi$, containing only active propositions,
+    \item all propositions such that $loc(p)=i$ are valid in $S$.
+\end{itemize}
+\end{Definition}
+
+The last point ensures the validity of the formulas with local propositions that will no longer change their truth value.
+ 
+\begin{Definition}
+A vertex in $\mathcal{G}$ is {\bf final} if it corresponds to a substate $S=(i, T, \Theta)$ such that $i=n-2L$
+    (active interval covers the end of $Loc$) and all propositions with $loc(p)>i$ or $loc(p)=0$ are valid in $S$.
+\end{Definition}
+
+\begin{figure*}[ht!]
+  \centering
+  \includegraphics[height=0.5\textheight]{states.pdf} 
+  \caption{Illustration of a path in the graph of substates.
+    The index of a proposition represents its location ($l(p_i)=i$)}
+  \label{fig:wide-svg}
+\end{figure*}
+
+\begin{algorithm}[ht!]
+\caption{Locality-based CONFLICT}
+\label{a:alg}
+\begin{algorithmic}[1]
+\Require $Prop, loc, Act, \Omega, \gamma, s_0, L$  
+\Ensure $\pi$ \Comment{Returns a satisfying action plan $\pi$ or False if it does not exist.}
+\State push($S_0$) \Comment{Push the initial substate $S_0$ to the stack.}
+\While{stack is not empty}
+\State $S$ := pop() \Comment{Take a substate from the stack.}
+\If{visited($S$) or not valid($S$)} \State continue; \EndIf
+\If{final($S$)} 
+\State $\pi :=$ list() \Comment{Initialize empty list.}
+\State $S_0, S_1, \dots, S$ := stack \Comment{Read stack bottom-up.}
+\For{$j=0,1,\dots$} 
+\If{$a\in Act$ changes $S_j$ to $S_{j+1}$}
+\State $\pi$.append($a$) 
+\EndIf 
+\EndFor
+\Return $\pi$
+\EndIf
+\State visited($S$) $:=$ True
+\For{$a\in Act$} \If{$a$ changes $S$ to $S'$} 
+\State push($S'$)  \Comment{Type 1 edge.}
+\EndIf \EndFor
+\State Construct $S'$ from $S$ as in Def. \ref{g} (Type 2)
+\State push($S'$) %\COMMENT{Type-2 edge.}
+\EndWhile \\
+\Return False
+\end{algorithmic}
+\end{algorithm}
+
+Assume that there is a path $\mathcal{P}$ in $\mathcal{G}$ from the initial state $S_0$ to a final state $T$. To generate an action plan $\pi$ that satisfies $\Omega$, we simply take the corresponding actions from all edges of Type 1 from $\mathcal{P}$ in the same order. Therefore, the algorithm for the locality-based CONFLICT problem is given in Algorithm \ref{a:alg} and the following theorem holds.
+
+\begin{Theorem}
+There is a plan $\pi = (a_1, \dots, a_k)$ such that $H(\pi, s_0, \gamma)$ satisfies $\Omega$ if and only if there is a path in $\mathcal{G}$ from the initial vertex $S_0$ to a final vertex.
+\end{Theorem}
+
+\begin{proof}{}
+Algorithm \ref{a:alg} is a depth-first search for any path in $\mathcal{G}$ from the initial vertex $S_0$ to a final vertex. Therefore, if a path exists, Algorithm \ref{a:alg} will find it and produce the corresponding action plan $\pi$. By construction of $\mathcal{G}$, it is clear that $H(\pi, s_0, \gamma)$ satisfies $\Omega$.
+
+For the other direction, assume that $\pi=(a_1,\dots,a_k)$ is a satisfying action plan. 
+We can construct the corresponding path in $\mathcal{G}$ (sequence of substates) as follows.
+Start with $t=1$ and $S_0$ as the initial substate. For each substate index $i=0,1,\dots,n-2L$, 
+perform the following subprocedure. 
+Apply actions in $\pi$ from $a_t$ onwards (by increasing $t$) such that $r(a_t)\le i + 2L$,
+update the current substate according to the action effects (Type-1 edge), and finally, when the next action no longer satisfies $r(a_t)\le i+2L$, move to the next substate index $i+1$ (Type-2 edge).
+Condition \eqref{k} ensures that after this subprocedure, no subsequent actions will change propositions
+with $loc(p)=i+1$, which means they are valid at that point (the action plan satisfies $\Omega$ by assumption).
+For the same reason, all propositions when $i=n-2L$ must be valid. Thus, the state is final. Figure \ref{fig:wide-svg} illustrates one potential path in a graph of substates.
+\end{proof}
+
+The computational complexity of the locality-based CONFLICT is: $O(n(|Act|+|\Omega|))$ for graph construction and $O(n^2)$ for a breath-first or depth-first search on a graph of substates. Thus, the locality-based CONFLICT is polynomial.
+
+Because of the large constant factor (simplified to $O(2^{2^M})$ for $K,L=O(M)$), the theoretical strength of this results depends on how small the constants are, which reveals a tradeoff between efficiency and flexibility.  However, this worst-case constant will almost never be obtained in practice since the concerned cardinality of $\Theta$ (a local subset of $\Omega$) will usually be far less than the number of all possible propositional logic formulas.
+
+\section{Example}\label{example}
+
+\subsection{Traffic Lights}\label{ex1}
+
+Consider a system that fixes traffic lights along a road. There are $n$ intersections denoted from $1$ to $n$ in the order of their position along the road. Let the set of local propositions
+$Loc=\bigcup_{i=1}^n\{on_i, broken_i\}$ denote whether the traffic lights on the corresponding
+intersections are turned on and whether they are broken (a traffic light can be turned off without being broken). Let the set of global propositions be $Glob=\{congestion\}$ and let $\Omega=\{FGon_i, i=1,\dots,n\}\cup\{G\neg congestion\}$, meaning that we want to ultimately
+fix and turn on all the traffic lights without ever causing congestion. For each intersection, there are three possible actions: $f_i$ fixes and turns on the traffic light, $g_i$ turns it off, and $h_i$ turns it on if it is not broken. Due to synchronicity issues, we can fix the traffic light only if one of the neighboring traffic lights is off. However, if both of them are off while repairing, it causes congestion. Formally,
+%\setlength{\mathindent}{0pt}
+\begin{multline}\gamma^-(f_i, broken_i)=\gamma^+(f_i, on_i)=\neg on_{i-1}\lor \neg on_{i+1}, \quad \textrm{for } 1<i<n, \\
+\gamma^-(f_i, broken_i)=\gamma^+(f_i, on_i)=\top \quad\textrm{for } i\in\{1,n\},\\
+\gamma^+(f_i, congestion)=\neg on_{i-1}\land \neg on_{i+1}\quad \textrm{for } 1<i<n,\\
+\gamma^-(g_i, on_i)=\top,\quad \gamma^+(h_i, on_i)=\neg broken_i,\quad \textrm{for } 1\le i\le n.
+\end{multline}
+
+\begin{figure}\label{f1}
+\begin{center}
+\includegraphics[height=1.6cm]{robot4.png}
+\caption{Example \ref{ex1}: Traffic lights 2, 4, and 5 are broken.}\label{f1}
+\end{center}
+\end{figure}
+
+$\mathcal{M}=(\Omega,\gamma,s_0)$ is a locality-based moral conflict for $M=|Glob|=1$ and $L=3$ since
+each action concerns at most three consecutive local propositions. 
+$L=3$ also means that actions $f_i$, $g_i$ and $h_i$ can be performed after $f_{j}$, $g_{j}$ and $h_{j}$ for
+$j\le i+3$, but not not after $f_{i+4}$, $g_{i+4}$ and $h_{i+4}$. Thus, the order of fixing traffic lights is roughly similar to their order along the road, which is a natural constraint.
+
+For $n=10$ and the initial state $s_0=\{on_1, broken_2, on_3$, $broken_4, broken_5, on_6,$ $on_7, on_8, on_9, on_{10}\}$ as depicted
+in Figure \ref{f1}, $\mathcal{M}$ is not a moral conflict.
+There is an action plan $\pi=(g_3, f_2, h_3, f_4, g_6, f_5, h_6)$.
+Namely, $g_3$ turns off light $3$ so we can fix light $2$ using $f_2$;
+then we turn on light $3$ again using $h_3$. We can then fix light $4$ using $f_4$.
+If we used $f_4$ before $h_3$ (ie, before light 3 was turned on), we would cause congestion. 
+To fix light $5$, we turn off light $6$ using $g_6$ and then perform $f_5$ before turning light $6$ on again using $h_6$. For this example, the proposed algorithm finds the following path, ie, the sequence of substates:
+
+%\setlength{\mathindent}{0pt}
+\small
+\begin{align*}
+\begin{split}
+(0, & \ \{\{on_1, broken_2, on_3, broken_4, broken_5, on_6\},\ \emptyset\}, \emptyset)
+\end{split}
+\\\begin{split}
+\text{perform } g_3 \to \ & (0, \ \{\{on_1, broken_2, broken_4, broken_5, on_6\},\ \emptyset\}, \emptyset)
+\end{split}
+\\\begin{split}
+\text{perform } f_2 \to \ & (0, \ \{\{on_1, on_2, broken_4, broken_5, on_6\},\ \emptyset\}, \emptyset)
+\end{split}
+\\\begin{split}
+\text{perform } h_3 \to \ & (0, \ \{\{on_1, on_2, on_3, broken_4, broken_5, on_6\},\  \emptyset\}, \emptyset)
+\end{split}
+\\\begin{split}
+\text{move } \to \ & (1, \ \{\{on_1, on_2, on_3, broken_4, broken_5, on_6, on_7\}, \ \emptyset\}, \emptyset)
+\end{split}
+\\\begin{split}
+\text{perform } f_4 \to \ & (1, \ \{\{on_1, on_2, on_3, on_4, broken_5, on_6, on_7\},\ \emptyset\}, \emptyset)
+\end{split}
+\\\begin{split}
+\text{move } \to \ & (2, \ \{\{on_1, on_2, on_3, on_4, broken_5, on_6, on_7, on_8\},\ \emptyset\}, \emptyset)
+\end{split}
+\\\begin{split}
+\text{perform } g_6 \to \ & (2, \ \{\{on_1, on_2, on_3, on_4, broken_5, on_7, on_8\}, \ \emptyset\}, \emptyset)
+\end{split}
+\\\begin{split}
+\text{perform } f_5 \to \ & (2, \ \{\{on_1, on_2, on_3, on_4, on_5, on_7, on_8\},\ \emptyset\}, \emptyset)
+\end{split}
+\\\begin{split}
+\text{perform } h_6 \to \ & (2, \ \{\{on_1, on_2, on_3, on_4, on_5, on_6, on_7, on_8\},\emptyset\}, \emptyset)
+\end{split}
+\\\begin{split}
+\text{move } \to \ & (3, \ \{\{on_1, on_2, on_3, on_4, on_5, on_6, on_7, on_8, on_9\},\ \emptyset\}, \emptyset)
+\end{split}
+\\\begin{split}
+\text{move } \to \ & (4, \ \{\{on_2, on_3, on_4, on_5, on_6, on_7, on_8, on_9, on_{10}\},\ \emptyset\}, \emptyset).
+\end{split}
+\end{align*}
+\normalsize
+
+\subsection{Traffic Lights with Chargers}\label{ex2}
+
+\begin{figure}
+\begin{center}
+\includegraphics[height=1.6cm]{robot5.png}
+\caption{Example \ref{ex2}: Traffic lights 2, 4, and 5 are broken, and there is a charger between each pair of lights. Fixing
+traffic light 4 drains the robot's battery.}\label{f2}
+\end{center}
+\end{figure}
+
+As depicted in Figure \ref{f2}, we expand the previous example by introducing charging stations between each pair of traffic lights. The charging stations allow the robot to recharge its battery. However, we want to avoid wasting battery charging cycles when it is not necessary, so we will disallow charging until the battery runs low due to major repair work. We introduce an action $c_i$ that fully charges the robot at the charging station located in front of the traffic light with the index $i$. If a proposition $charged_i$ denotes that this charger has been used, the described condition can be written as $\neg charged_i\ U\ lowBattery$.
+
+\noindent Formally, we have: \begin{multline}
+\begin{split}
+&Loc = \cup_{i=1}^{n} \{on_i,\ broken_i, charged_i\},\ Glob = \{congestion, lowBattery\}, 
+\end{split}
+\\\begin{split}
+&\Omega = \{FG on_i, i = 1,\dots, n\}\ \cup \{\neg charged_i\ U\ lowBattery, i = 1,\dots, n\} 
+\cup \{\ G\ \neg congestion\}\ \cup \{FG\ \neg lowBattery \}.
+\end{split}
+\end{multline}
+We update the actions so that \begin{equation}\gamma^{-}(c_i,lowBattery) = \gamma^{+}(c_i, charged_i) = \top.\end{equation} Major repair work will include fixing traffic light $4$, thus $\gamma^{+}(f_4,lowBattery)  = \top$. Actions $f_i, g_i, h_i$ can be performed only if the battery is not low: 
+\begin{multline}
+\begin{split}
+\gamma^-(f_i, broken_i)&=\gamma^+(f_i, on_i)=(\neg on_{i-1}\lor \neg on_{i+1})\ \wedge \neg lowBattery \quad \textrm{for } 1<i<n,
+\end{split}
+\\\begin{split}
+\gamma^-(f_i, broken_i)&=\gamma^+(f_i, on_i)=\neg lowBattery \quad \textrm{for } i\in\{1,n\},
+\end{split}
+\\\begin{split}
+\gamma^-(g_i, on_i)&=\neg lowBattery,\; \gamma^+(h_i, on_i)= \neg broken_i \wedge \neg lowBattery \quad \textrm{for } 1\le i\le n.
+\end{split}
+\end{multline}
+
+Again, since each action affects at most three consecutive local propositions, we have $L = 3$. The algorithm finds the following path, ie, the sequence of substates: 
+
+\itemsep0em
+%\setlength{\mathindent}{0pt}
+\small
+\begin{align*}
+\begin{split}
+(0, & \ \{\{on_1, broken_2, on_3, broken_4, broken_5, on_6\},\ \emptyset\}, \emptyset)
+\end{split}
+\\\begin{split}
+\text{perform } g_3 \to \ & (0, \ \{\{on_1, broken_2, broken_4, broken_5, on_6\},\ \emptyset\}, \emptyset)
+\end{split}
+\\\begin{split}
+\text{perform } f_2 \to \ & (0, \ \{\{on_1, on_2, broken_4, broken_5, on_6\},\ \emptyset\}, \emptyset)
+\end{split}
+\\\begin{split}
+\text{perform } h_3 \to \ & (0, \ \{\{on_1, on_2, on_3, broken_4, broken_5, on_6\},\ \emptyset\}, \emptyset)
+\end{split}
+\\\begin{split}
+\text{move } \to \ & (1, \ \{\{on_1, on_2, on_3, broken_4, broken_5, on_6, on_7\},\ \emptyset\}, \emptyset)
+\end{split}
+\\\begin{split}
+\text{perform } f_4 \to \ & (1, \ \{\{on_1, on_2, on_3, on_4, broken_5, on_6, on_7\},\ \{lowBattery\}\}, \cup_{i=1}^{7}\{\neg charged_i\; U \; lowBattery\})
+\end{split}
+\\\begin{split}
+\text{move } \to \ & (2, \ \{\{on_1, on_2, on_3, on_4, broken_5, on_6, on_7, on_8\},\ \{lowBattery\}\}, \cup_{i=1}^{8}\{\neg  charged_i \; U \; lowBattery\})
+\end{split}
+\\\begin{split}
+\text{perform } c_4 \to \ & (2, \ \{\{on_1, on_2, on_3, on_4, charged_5, broken_5, on_6, on_7, on_8\},\ \emptyset\}, \cup_{i=1}^{8}\{\neg charged_i \; U \;  lowBattery\})
+\end{split}
+\\\begin{split}
+\text{move } \to \ & (3, \ \{\{on_1, on_2, on_3, on_4, broken_5, on_6, on_7, on_8, on_9\},\ \emptyset\}, \cup_{i=1}^{9}\{\neg charged_i \; U \; lowBattery\})
+\end{split}
+\\\begin{split}
+\text{perform } g_6 \to \ & (3, \ \{\{on_1, on_2, on_3, on_4, broken_5, on_7, on_8, on_9\},\ \emptyset\}, \cup_{i=1}^{9}\{\neg charged_i \; U \; lowBattery\})
+\end{split}
+\\\begin{split}
+\text{perform } f_5 \to \ & (3, \ \{\{on_1, on_2, on_3, on_4, on_5, on_7, on_8, on_9\},\ \emptyset\}, \cup_{i=1}^{9}\{\neg charged_i \; U \; lowBattery\})
+\end{split}
+\\\begin{split}
+\text{perform } h_6 \to \ & (3, \ \{\{on_1, on_2, on_3, on_4, on_5, on_6, on_7, on_8, on_9\},\ \emptyset\}, \cup_{i=1}^{9}\{\neg charged_i \; U \; lowBattery\})
+\end{split}
+\\\begin{split}
+\text{move } \to \ & (4, \ \{\{on_2, on_3, on_4, on_5, on_6, on_7, on_8, on_9, on_{10}\},\ \emptyset\}, \cup_{i=2}^{10}\{\neg charged_i \; U \; lowBattery\})
+\end{split}
+ \end{align*}
+\normalsize
+
+The last substate is indeed final since $i=n-2L$ and all active propositions are valid in the sense of Definitions \ref{gval} and
+\ref{lval}. For example, $FGon_7$ and $FG\neg lowBattery$ are true, while $\neg charged_7 \; U\; lowBettery$ does belong
+to $\Theta$. The validity of previous local propositions, such as $on_1$, has been verified as part of the "move" operation according
+to Definition \ref{g}, while the truth of $G \neg congestion$ was verified in each substate according to Definition \ref{invalid}.
+
+\section{Conclusion}\label{conc}
+
+We introduced a locality-based approach to solving the CONFLICT problem in ethical planning using Linear Temporal Logic (LTL). By incorporating assumptions on the structure of the problem, the distinction between global and local propositions and the constraints on the scope and sequence of actions, we were able to reduce the complexity of the problem from PSPACE-complete to polynomial time. The introduced concept of localized planning restricts the actions to only affect and depend on propositions within a bounded interval. It incorporates constraints on the temporal order of actions based on this interval. Due to possibility of large constant factors in the algorithm complexity, there might be a tradeoff between efficiency and flexibility. We consider the proposed algorithm to be practical   for real-world applications with small values of constants $K$, $L$, and $M$, ie, the applications with "high locality".
+
+Overall, our work offers a promising direction for efficient and scalable ethical planning in autonomous systems and robotics. By constraining the problem space in a principled way, we enable the development of action plans that adhere to predefined values, ensuring ethical behavior in complex, dynamic environments. Future research could explore extending this framework to accommodate more complex moral structures and larger sets of global propositions, as well as applying these methods to real-world robotic systems and other automated decision-making contexts.
+
+
+%\begin{acks}
+%To Robert, for the bagels and explaining CMYK and color spaces.
+%\end{acks}
+
+%%
+%% The next line prints the references.
+\printbibliography
+
+
+%%
+%% If your work has an appendix, this is the place to put it.
+%\appendix
+
+
+%\section{Research Methods}
+
+%\subsection{Part One}
+
+%Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi
+%malesuada, quam in pulvinar varius, metus nunc fermentum urna, id
+%sollicitudin purus odio sit amet enim. Aliquam ullamcorper eu ipsum
+%vel mollis. Curabitur quis dictum nisl. Phasellus vel semper risus, et
+%lacinia dolor. Integer ultricies commodo sem nec semper.
+
+%\subsection{Part Two}
+
+%Etiam commodo feugiat nisl pulvinar pellentesque. Etiam auctor sodales
+%ligula, non varius nibh pulvinar semper. Suspendisse nec lectus non
+%ipsum convallis congue hendrerit vitae sapien. Donec at laoreet
+%eros. Vivamus non purus placerat, scelerisque diam eu, cursus
+%ante. Etiam aliquam tortor auctor efficitur mattis.
+
+%\section{Online Resources}
+
+%Nam id fermentum dui. Suspendisse sagittis tortor a nulla mollis, in
+%pulvinar ex pretium. Sed interdum orci quis metus euismod, et sagittis
+%enim maximus. Vestibulum gravida massa ut felis suscipit
+%congue. Quisque mattis elit a risus ultrices commodo venenatis eget
+%dui. Etiam sagittis eleifend elementum.
+
+%Nam interdum magna at lectus dignissim, ac dignissim lorem
+%rhoncus. Maecenas eu arcu ac neque placerat aliquam. Nunc pulvinar
+%massa et mattis lacinia.
+
+%\section{Reproducibility Checklist for JAIR}
+
+%Select the answers that apply to your research -- one per item. 
+
+%\subsection*{All articles:}
+
+%\hh{revised for stylistic consistency:}
+%\begin{enumerate}
+%    \item All claims investigated in this work are clearly stated. 
+%    [yes/partially/no]
+%    \item Clear explanations are given how the work reported substantiates the claims. 
+%    [yes/partially/no]
+%    \item Limitations or technical assumptions are stated clearly and explicitly. 
+%    [yes/partially/no]
+%    \item Conceptual outlines and/or pseudo-code descriptions of the AI methods introduced in this work are provided, and important implementation details are discussed. 
+%    [yes/partially/no/NA]
+%    \item 
+%    Motivation is provided for all design choices, including algorithms, implementation choices, parameters, data sets and experimental protocols beyond metrics.
+%    [yes/partially/no]
+%\end{enumerate}
+
+%\subsection*{Articles containing theoretical contributions:}
+%Does this paper make theoretical contributions? 
+%[yes/no] 
+
+%If yes, please complete the list below.
+
+%\begin{enumerate}
+%    \item All assumptions and restrictions are stated clearly and formally. 
+%    [yes/partially/no]
+%    \item All novel claims are stated formally (e.g., in theorem statements). 
+%    [yes/partially/no]
+%    \item Proofs of all non-trivial claims are provided in sufficient detail to permit verification by readers with a reasonable degree of expertise (e.g., that expected from a PhD candidate in the same area of AI). [yes/partially/no]
+%    \item
+%    Complex formalism, such as definitions or proofs, is motivated and explained clearly.
+%hh: was:
+%Proof sketches or intuitions are given for complex and/or novel results.
+%    [yes/partially/no]
+%    \item 
+%    The use of mathematical notation and formalism serves the purpose of enhancing clarity and precision; gratuitous use of mathematical formalism (i.e., use that does not enhance clarity or precision) is avoided.
+%    [yes/partially/no]
+%    \item 
+%    Appropriate citations are given for all non-trivial theoretical tools and techniques. 
+%    [yes/partially/no]
+%\end{enumerate}
+
+%\subsection*{Articles reporting on computational experiments:}
+%Does this paper include computational experiments? [yes/no]
+
+%If yes, please complete the list below.
+%\begin{enumerate}
+%    \item 
+%    All source code required for conducting experiments is included in an online appendix 
+%    or will be made publicly available upon publication of the paper.
+%    The online appendix follows best practices for source code readability and documentation as well as for long-term accessibility.
+%    [yes/partially/no]
+%    \item The source code comes with a license that
+%    allows free usage for reproducibility purposes.
+%    [yes/partially/no]
+%    \item The source code comes with a license that
+%    allows free usage for research purposes in general.
+%    [yes/partially/no]
+%    \item 
+%    Raw, unaggregated data from all experiments is included in an online appendix 
+%    or will be made publicly available upon publication of the paper.
+%    The online appendix follows best practices for long-term accessibility.
+%    [yes/partially/no]
+%    \item The unaggregated data comes with a license that
+%    allows free usage for reproducibility purposes.
+%    [yes/partially/no]
+%    \item The unaggregated data comes with a license that
+%    allows free usage for research purposes in general.
+%    [yes/partially/no]
+%    \item If an algorithm depends on randomness, then the method used for generating random numbers and for setting seeds is described in a way sufficient to allow replication of results. 
+%    [yes/partially/no/NA]
+%    \item The execution environment for experiments, the computing infrastructure (hardware and software) used for running them, is described, including GPU/CPU makes and models; amount of memory (cache and RAM); make and version of operating system; names and versions of relevant software libraries and frameworks. 
+%    [yes/partially/no]
+%    \item 
+%    The evaluation metrics used in experiments are clearly explained and their choice is explicitly motivated. 
+%    [yes/partially/no]
+%    \item 
+%    The number of algorithm runs used to compute each result is reported. 
+%    [yes/no]
+%    \item 
+%    Reported results have not been ``cherry-picked'' by silently ignoring unsuccessful or unsatisfactory experiments. 
+%    [yes/partially/no]
+%    \item 
+%    Analysis of results goes beyond single-dimensional summaries of performance (e.g., average, median) to include measures of variation, confidence, or other distributional information. 
+%    [yes/no]
+%    \item 
+%    All (hyper-) parameter settings for 
+%    the algorithms/methods used in experiments have been reported, along with the rationale or method for determining them. 
+%    [yes/partially/no/NA]
+%    \item 
+%    The number and range of (hyper-) parameter settings explored prior to conducting final experiments have been indicated, along with the effort spent on (hyper-) parameter optimisation. 
+%    [yes/partially/no/NA]
+%    \item 
+%    Appropriately chosen statistical hypothesis tests are used to establish statistical significance
+%    in the presence of noise effects.
+%    [yes/partially/no/NA]
+%\end{enumerate}
+
+
+%\subsection*{Articles using data sets:}
+%Does this work rely on one or more data sets (possibly obtained from a benchmark generator or similar software artifact)? 
+%[yes/no]
+
+%If yes, please complete the list below.
+%\begin{enumerate}
+%    \item 
+%    All newly introduced data sets 
+%    are included in an online appendix 
+%    or will be made publicly available upon publication of the paper.
+%    The online appendix follows best practices for long-term accessibility with a license
+%    that allows free usage for research purposes.
+%    [yes/partially/no/NA]
+%    \item The newly introduced data set comes with a license that
+%    allows free usage for reproducibility purposes.
+%    [yes/partially/no]
+%    \item The newly introduced data set comes with a license that
+%    allows free usage for research purposes in general.
+%    [yes/partially/no]
+%    \item All data sets drawn from the literature or other public sources (potentially including authors' own previously published work) are accompanied by appropriate citations.
+%    [yes/no/NA]
+%    \item All data sets drawn from the existing literature (potentially including authors’ own previously published work) are publicly available. [yes/partially/no/NA]
+    %\item All data sets that are not publicly available are described in detail.
+    %[yes/partially/no/NA]
+%    \item All new data sets and data sets that are not publicly available are described in detail, including relevant statistics, the data collection process and annotation process if relevant.
+%    [yes/partially/no/NA]
+%    \item 
+%    All methods used for preprocessing, augmenting, batching or splitting data sets (e.g., in the context of hold-out or cross-validation)
+ %   are described in detail. [yes/partially/no/NA]
+%\end{enumerate}
+
+%\subsection*{Explanations on any of the answers above (optional):}
+
+%[Text here; please keep this brief.]
+
+\end{document}
+\endinput
+%%
+%% End of file `sample-acmlarge.tex'.

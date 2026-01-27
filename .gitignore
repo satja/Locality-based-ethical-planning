@@ -1,0 +1,33 @@
+# Binaries
+planner
+bruteforce-planner
+validate
+gen-systematic-tests
+a.out
+
+# Build artifacts
+*.o
+*.obj
+*.exe
+
+# Generated plans / validator inputs
+*.paper.full.txt
+*.bf.full.txt
+*.full.txt
+
+# Logs and timing artifacts
+*.err
+*.log
+
+# Benchmarks and plots (generated)
+benchmark*.csv
+benchmark*.png
+tests_systematic/benchmark*.csv
+tests_systematic/benchmark*.png
+
+tests_systematic/*.paper.full.txt
+tests_systematic/*.bf.full.txt
+
+# Editor / OS
+*.swp
+.DS_Store
