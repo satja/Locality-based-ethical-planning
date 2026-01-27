@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Benchmark both planners on tests/*.input-only.txt and emit a CSV.
+# Benchmark the paper planner and two baselines on *.input-only.txt and emit a CSV.
 # Usage:
-#   ./benchmark.sh [--dir tests] [--L 3] [--max-depth 80] [--planner-timeout 10] [--bf-timeout 30] [--limit 0] [--out tests/benchmark.csv]
+#   ./benchmark.sh [--dir tests] [--L 3] [--max-depth 80] [--planner-timeout 10] [--bf-timeout 30] [--final-timeout 30] [--limit 0] [--out tests/benchmark.csv]
 
 DIR="tests"
 L=3
 MAX_DEPTH=80
 PLANNER_TIMEOUT=10
 BF_TIMEOUT=30
+FINAL_TIMEOUT=30
 LIMIT=0
 OUT="tests/benchmark.csv"
 
@@ -25,6 +26,8 @@ while [[ $# -gt 0 ]]; do
       PLANNER_TIMEOUT="$2"; shift 2;;
     --bf-timeout)
       BF_TIMEOUT="$2"; shift 2;;
+    --final-timeout)
+      FINAL_TIMEOUT="$2"; shift 2;;
     --limit)
       LIMIT="$2"; shift 2;;
     --out)
@@ -98,7 +101,7 @@ run_timed() {
   echo "$status,$elapsed"
 }
 
-echo "case,n,broken_count,planner_status,planner_time_s,bruteforce_status,bruteforce_time_s" > "$OUT"
+echo "case,n,broken_count,planner_status,planner_time_s,bruteforce_status,bruteforce_time_s,final_only_status,final_only_time_s" > "$OUT"
 
 shopt -s nullglob
 case_count=0
@@ -131,15 +134,17 @@ for f in "${FILES[@]}"; do
 
   planner_out="${f%.input-only.txt}.paper.full.txt"
   bf_out="${f%.input-only.txt}.bf.full.txt"
+  final_out="${f%.input-only.txt}.final.full.txt"
 
   IFS=',' read -r planner_status planner_time < <(run_timed "$f" "$planner_out" "$PLANNER_TIMEOUT" ./planner --L "$L")
   IFS=',' read -r bf_status bf_time < <(run_timed "$f" "$bf_out" "$BF_TIMEOUT" ./bruteforce-planner --max-depth "$MAX_DEPTH")
+  IFS=',' read -r final_status final_time < <(run_timed "$f" "$final_out" "$FINAL_TIMEOUT" ./bruteforce-planner --final-only --max-depth "$MAX_DEPTH")
 
-  echo "$case_name,$n_val,$broken_cnt,$planner_status,$planner_time,$bf_status,$bf_time" >> "$OUT"
-  echo "benchmarked $case_name (planner ${planner_time}s, bf ${bf_time}s)"
+  echo "$case_name,$n_val,$broken_cnt,$planner_status,$planner_time,$bf_status,$bf_time,$final_status,$final_time" >> "$OUT"
+  echo "benchmarked $case_name (planner ${planner_time}s, bf ${bf_time}s, final ${final_time}s)"
   case_count=$((case_count + 1))
 done
 
 # Record the configuration used for the benchmark.
-echo "# L=$L max_depth=$MAX_DEPTH planner_timeout=$PLANNER_TIMEOUT bf_timeout=$BF_TIMEOUT limit=$LIMIT" >> "$OUT"
+echo "# L=$L max_depth=$MAX_DEPTH planner_timeout=$PLANNER_TIMEOUT bf_timeout=$BF_TIMEOUT final_timeout=$FINAL_TIMEOUT limit=$LIMIT" >> "$OUT"
 echo "Wrote $OUT"

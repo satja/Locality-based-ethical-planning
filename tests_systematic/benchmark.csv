@@ -1,0 +1,22 @@
+case,n,broken_count,planner_status,planner_time_s,bruteforce_status,bruteforce_time_s,final_only_status,final_only_time_s
+case-0.input-only.txt,6,1,1,0.00,1,0.00,1,0.00
+case-1.input-only.txt,6,1,0,0.00,0,0.01,0,0.06
+case-2.input-only.txt,6,2,0,0.00,0,0.01,0,0.06
+case-3.input-only.txt,7,1,0,0.00,1,0.00,1,0.00
+case-4.input-only.txt,7,1,0,0.00,0,0.01,0,0.13
+case-5.input-only.txt,7,2,0,0.00,0,0.01,0,0.20
+case-6.input-only.txt,8,1,0,0.00,1,0.00,1,0.00
+case-7.input-only.txt,8,1,0,0.00,0,0.06,0,0.31
+case-8.input-only.txt,8,2,0,0.00,0,0.03,0,0.35
+case-10.input-only.txt,9,1,0,0.01,0,0.12,0,0.64
+case-11.input-only.txt,9,2,0,0.00,0,0.04,0,0.66
+case-9.input-only.txt,9,1,0,0.00,1,0.00,1,0.00
+case-12.input-only.txt,10,1,0,0.00,1,0.00,1,0.00
+case-13.input-only.txt,10,1,0,0.00,0,0.07,0,0.98
+case-14.input-only.txt,10,2,0,0.00,0,0.22,0,1.89
+case-15.input-only.txt,11,1,0,0.00,1,0.00,1,0.00
+case-16.input-only.txt,11,1,0,0.00,0,0.71,0,3.00
+case-17.input-only.txt,11,2,0,0.00,0,0.15,0,3.28
+case-18.input-only.txt,12,1,0,0.00,1,0.00,1,0.00
+case-19.input-only.txt,12,1,0,0.00,0,3.74,124,5
+# L=3 max_depth=80 planner_timeout=10 bf_timeout=5 final_timeout=5 limit=20

@@ -8,7 +8,10 @@ set -u
 
 L=${L:-3}
 DIR=${DIR:-tests_systematic}
-MODE=paper  # paper | bruteforce | both
+MODE=paper  # paper | bruteforce | final-only | both | all
+PLANNER_TIMEOUT=${PLANNER_TIMEOUT:-10}
+BF_TIMEOUT=${BF_TIMEOUT:-30}
+FINAL_TIMEOUT=${FINAL_TIMEOUT:-30}
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -16,11 +19,17 @@ while [[ $# -gt 0 ]]; do
       DIR="$2"; shift 2;;
     --mode)
       MODE="$2"; shift 2;;
-    paper|bruteforce|both)
+    --planner-timeout)
+      PLANNER_TIMEOUT="$2"; shift 2;;
+    --bf-timeout)
+      BF_TIMEOUT="$2"; shift 2;;
+    --final-timeout)
+      FINAL_TIMEOUT="$2"; shift 2;;
+    paper|bruteforce|final-only|both|all)
       MODE="$1"; shift;;
     *)
       echo "Unknown arg: $1" >&2
-      echo "Usage: ./run-tests.sh [paper|bruteforce|both] [--dir DIR] [--mode MODE]" >&2
+      echo "Usage: ./run-tests.sh [paper|bruteforce|final-only|both|all] [--dir DIR] [--mode MODE] [--planner-timeout S] [--bf-timeout S] [--final-timeout S]" >&2
       exit 2;;
   esac
 done
@@ -29,6 +38,8 @@ paper_ok=0
 paper_fail=0
 bf_ok=0
 bf_fail=0
+final_ok=0
+final_fail=0
 
 # Build the file list. If DIR is ".", explicitly skip deprecated/.
 FILES=()
@@ -45,12 +56,22 @@ if [[ ${#FILES[@]} -eq 0 ]]; then
   exit 1
 fi
 
+run_with_timeout() {
+  local timeout_secs="$1"; shift
+  if [[ "$timeout_secs" -gt 0 ]]; then
+    /usr/bin/timeout --signal=TERM --kill-after=1s "${timeout_secs}s" "$@"
+  else
+    "$@"
+  fi
+}
+
 for f in "${FILES[@]}"; do
   base=${f%.input-only.txt}
 
-  if [[ "$MODE" == "paper" || "$MODE" == "both" ]]; then
+  if [[ "$MODE" == "paper" || "$MODE" == "both" || "$MODE" == "all" ]]; then
     out="${base}.paper.full.txt"
-    if ./planner --L "$L" < "$f" > "$out" && ./validate < "$out"; then
+    if run_with_timeout "$PLANNER_TIMEOUT" ./planner --L "$L" < "$f" > "$out" \
+      && run_with_timeout "$PLANNER_TIMEOUT" ./validate < "$out"; then
       paper_ok=$((paper_ok + 1))
       echo "[paper] OK   $f"
     else
@@ -59,9 +80,10 @@ for f in "${FILES[@]}"; do
     fi
   fi
 
-  if [[ "$MODE" == "bruteforce" || "$MODE" == "both" ]]; then
+  if [[ "$MODE" == "bruteforce" || "$MODE" == "both" || "$MODE" == "all" ]]; then
     out="${base}.bf.full.txt"
-    if ./bruteforce-planner --max-depth 80 < "$f" > "$out" && ./validate < "$out"; then
+    if run_with_timeout "$BF_TIMEOUT" ./bruteforce-planner --max-depth 80 < "$f" > "$out" \
+      && run_with_timeout "$BF_TIMEOUT" ./validate < "$out"; then
       bf_ok=$((bf_ok + 1))
       echo "[bf]    OK   $f"
     else
@@ -69,13 +91,29 @@ for f in "${FILES[@]}"; do
       echo "[bf]    FAIL $f"
     fi
   fi
+
+  if [[ "$MODE" == "final-only" || "$MODE" == "all" ]]; then
+    out="${base}.final.full.txt"
+    if run_with_timeout "$FINAL_TIMEOUT" ./bruteforce-planner --final-only --max-depth 80 < "$f" > "$out" \
+      && run_with_timeout "$FINAL_TIMEOUT" ./validate < "$out"; then
+      final_ok=$((final_ok + 1))
+      echo "[final] OK   $f"
+    else
+      final_fail=$((final_fail + 1))
+      echo "[final] FAIL $f"
+    fi
+  fi
 done
 
 echo
 echo "L=$L mode=$MODE dir=$DIR"
-if [[ "$MODE" == "paper" || "$MODE" == "both" ]]; then
+echo "timeouts: planner=$PLANNER_TIMEOUT bf=$BF_TIMEOUT final=$FINAL_TIMEOUT"
+if [[ "$MODE" == "paper" || "$MODE" == "both" || "$MODE" == "all" ]]; then
   echo "paper: ok=$paper_ok fail=$paper_fail"
 fi
-if [[ "$MODE" == "bruteforce" || "$MODE" == "both" ]]; then
+if [[ "$MODE" == "bruteforce" || "$MODE" == "both" || "$MODE" == "all" ]]; then
   echo "bruteforce: ok=$bf_ok fail=$bf_fail"
+fi
+if [[ "$MODE" == "final-only" || "$MODE" == "all" ]]; then
+  echo "final-only: ok=$final_ok fail=$final_fail"
 fi
