@@ -14,33 +14,42 @@ This repo now supports three clearly distinct planning approaches for comparison
 
 - Planner (`planner.cpp`): Implements the locality-based “graph of substates” algorithm with locality parameter `L`. It restricts what can still change and prunes using validity checks over a moving window.
 - Brute-force with step pruning (`bruteforce-planner.cpp`): Explores full valuations plus temporal memory and prunes immediately if any value is violated at an intermediate step. This is a strong but still-local baseline that enforces values “online.”
-- Automata / progression baseline (`ltlf-progress-planner.cpp`): Builds an on-the-fly product search between planning states and residual LTLf formulas obtained via syntactic progression. Each node stores the current valuation plus progressed formulas. Progression prunes branches that are already unsatisfiable, and acceptance is checked via empty-trace acceptance together with explicit final-state constraints for root-level `FG` values.
+- Automata / progression baseline (`ltlf-progress-planner.cpp`): Uses a standard LTLf idea from the literature: translate the temporal goals into an automaton (or build it on the fly) and search in the product of planning states and automaton states. Here we build the automaton state on the fly using syntactic progression of the formulas. citeturn0search3turn0search5
 
 ### Automata / Progression Baseline Details
 
-The automata baseline is implemented directly in `ltlf-progress-planner.cpp` using
-progression-style monitoring for LTL over finite traces:
+This baseline is meant to be readable without automata background. The core
+idea is:
 
-- Value formulas are parsed into a small AST with operators `NOT`, `AND`, `OR`,
-  `X`, `F`, `G`, `U`, and `FG`.
-- Each search node keeps a product state:
-  planning valuation (`lv`, `gv`) plus a residual formula per value.
-- Residual formulas are advanced with syntactic progression at each state.
-  This corresponds to the standard automata construction idea, but performed
-  on-the-fly during search.
-- Branches are pruned immediately when any residual becomes `FALSE`.
-- Acceptance is checked by evaluating whether every residual accepts the empty
-  suffix at the current state, together with a final-state check for root-level
-  `FG` values.
-- The search strategy is breadth-first over the product state with a visited
-  table keyed by valuation plus residual signatures, storing the best depth seen.
+1. Keep track of “what remains to be satisfied” for each temporal goal.
+2. Update that remainder after each action.
+3. Search over both the planning state and those remainders together.
 
-Two important modeling notes:
+This is exactly the automata/product-state approach used in LTLf synthesis and
+planning, but done on the fly via progression rather than pre-building a full
+automaton. citeturn0search3turn0search5
 
-- The repository’s validator treats `FG` as a final-state constraint. The
-  automata baseline mirrors this for root-level `FG` values.
-- Nested `FG` occurrences are treated conservatively by stripping them to `TRUE`
-  for the progression state and checking only root-level `FG` at the end.
+Concretely, `ltlf-progress-planner.cpp` does the following:
+
+- Parse each value formula into a small syntax tree with operators `NOT`, `AND`,
+  `OR`, `X`, `F`, `G`, `U`, and `FG`.
+- Represent the temporal “remainder” of each formula as a residual formula.
+- After each state update, progress every residual formula through the current
+  valuation. If any residual becomes `FALSE`, that branch is impossible and is
+  pruned immediately.
+- Check acceptance by asking: “could I stop here and still satisfy all values?”
+  This is implemented as empty-trace acceptance of each residual, plus explicit
+  final-state checks for `FG`.
+- Run a breadth-first search over the product state:
+  `(planning valuation, residual formulas)`, with a visited table keyed by both
+  parts together.
+
+Two modeling notes that match the current validator:
+
+- The validator treats `FG` as a final-state condition. The automata baseline
+  mirrors this for root-level `FG` values.
+- Nested `FG` occurrences are handled conservatively by removing them from the
+  progression state and checking only root-level `FG` at the end.
 
 ## 1) Basic Setup: Build, Run, Validate
 
