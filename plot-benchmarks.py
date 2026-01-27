@@ -8,6 +8,10 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import argparse
 
+# CLI flags:
+#   --csv PATH: benchmark CSV to read (default: tests/benchmark.csv)
+#   --out-dir DIR: where to write plots (default: CSV directory)
+
 parser = argparse.ArgumentParser(description="Plot planner benchmarks from a CSV.")
 parser.add_argument("--csv", default="tests/benchmark.csv", help="Path to benchmark CSV.")
 parser.add_argument("--out-dir", default=None, help="Directory to place plots (defaults to CSV dir).")
@@ -35,8 +39,8 @@ for r in reader:
         planner_time = float(r["planner_time_s"])
         bf_status = int(r["bruteforce_status"])
         bf_time = float(r["bruteforce_time_s"])
-        final_status = int(r["final_only_status"]) if r.get("final_only_status") else None
-        final_time = float(r["final_only_time_s"]) if r.get("final_only_time_s") else float("nan")
+        auto_status = int(r["automata_status"]) if r.get("automata_status") else None
+        auto_time = float(r["automata_time_s"]) if r.get("automata_time_s") else float("nan")
     except Exception:
         continue
     data.append(
@@ -48,8 +52,8 @@ for r in reader:
             planner_time,
             bf_status,
             bf_time,
-            final_status,
-            final_time,
+            auto_status,
+            auto_time,
         )
     )
 
@@ -60,25 +64,25 @@ planner_ok = [d for d in ok if d[3] == 0]
 planner_to = [d for d in ok if d[3] in TIMEOUT_STATUSES]
 bf_ok = [d for d in ok if d[5] == 0]
 bf_to = [d for d in ok if d[5] in TIMEOUT_STATUSES]
-final_ok = [d for d in ok if d[7] == 0]
-final_to = [d for d in ok if d[7] in TIMEOUT_STATUSES]
+auto_ok = [d for d in ok if d[7] == 0]
+auto_to = [d for d in ok if d[7] in TIMEOUT_STATUSES]
 
 # ---- Plot 1: time vs n (scatter + mean line) ----
 fig, ax = plt.subplots(figsize=(8, 5))
 
 ax.scatter([d[1] for d in planner_ok], [d[4] for d in planner_ok], label="planner", alpha=0.8)
 ax.scatter([d[1] for d in bf_ok], [d[6] for d in bf_ok], label="bruteforce", alpha=0.8)
-if final_ok:
-    ax.scatter([d[1] for d in final_ok], [d[8] for d in final_ok], label="final-only", alpha=0.8)
+if auto_ok:
+    ax.scatter([d[1] for d in auto_ok], [d[8] for d in auto_ok], label="automata", alpha=0.8)
 if planner_to:
     ax.scatter([d[1] for d in planner_to], [d[4] for d in planner_to],
                label="planner timeout", marker="x")
 if bf_to:
     ax.scatter([d[1] for d in bf_to], [d[6] for d in bf_to],
                label="bruteforce timeout", marker="x")
-if final_to:
-    ax.scatter([d[1] for d in final_to], [d[8] for d in final_to],
-               label="final-only timeout", marker="x")
+if auto_to:
+    ax.scatter([d[1] for d in auto_to], [d[8] for d in auto_to],
+               label="automata timeout", marker="x")
 
 
 def mean_by_n(points, idx_time):
@@ -91,13 +95,13 @@ def mean_by_n(points, idx_time):
 
 px, py = mean_by_n(planner_ok, 4)
 bx, by = mean_by_n(bf_ok, 6)
-fx, fy = mean_by_n(final_ok, 8) if final_ok else ([], [])
+ax_x, ax_y = mean_by_n(auto_ok, 8) if auto_ok else ([], [])
 if px:
     ax.plot(px, py, linestyle="--")
 if bx:
     ax.plot(bx, by, linestyle="--")
-if fx:
-    ax.plot(fx, fy, linestyle="--")
+if ax_x:
+    ax.plot(ax_x, ax_y, linestyle="--")
 
 ax.set_title("Planner Runtime vs n")
 ax.set_xlabel("n (number of intersections)")
@@ -114,13 +118,13 @@ plt.close(fig)
 cases = [d[0] for d in ok]
 planner_times = [d[4] for d in ok]
 bf_times = [d[6] for d in ok]
-final_times = [d[8] for d in ok] if any(d[7] is not None for d in ok) else []
+auto_times = [d[8] for d in ok] if any(d[7] is not None for d in ok) else []
 
 fig, ax = plt.subplots(figsize=(10, 5))
 ax.plot(planner_times, marker="o", label="planner")
 ax.plot(bf_times, marker="o", label="bruteforce")
-if final_times:
-    ax.plot(final_times, marker="o", label="final-only")
+if auto_times:
+    ax.plot(auto_times, marker="o", label="automata")
 
 ax.set_title("Per-case Runtime Comparison")
 ax.set_xlabel("case index")
@@ -129,7 +133,7 @@ ax.legend()
 ax.grid(True, alpha=0.3)
 
 # Use log scale when times vary a lot.
-all_times = planner_times + bf_times + final_times
+all_times = planner_times + bf_times + auto_times
 max_time = max([t for t in all_times if t == t] or [0.0])
 min_time = min([t for t in all_times if t == t] or [0.0])
 if max_time > 0 and min_time > 0 and max_time / min_time > 50:

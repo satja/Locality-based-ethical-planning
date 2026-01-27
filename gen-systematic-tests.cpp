@@ -23,6 +23,14 @@ static bool starts_with(const std::string& s, const std::string& prefix) {
 }
 
 static Config parse_args(int argc, char** argv) {
+    /*
+    CLI flags:
+    - --dir DIR: output directory for generated cases and manifest.txt.
+    - --n-min N: smallest problem size n to generate.
+    - --n-max N: largest problem size n to generate.
+    - --per-n K: number of cases per n (must be positive).
+    - --seed S: RNG seed for reproducibility.
+    */
     Config cfg;
     for (int i = 1; i < argc; i++) {
         const std::string arg = argv[i];

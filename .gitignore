@@ -3,6 +3,8 @@ planner
 bruteforce-planner
 validate
 gen-systematic-tests
+ltlf-progress-planner
+ltlf-progress-planner-asan
 a.out
 
 # Build artifacts

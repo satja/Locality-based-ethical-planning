@@ -532,13 +532,6 @@ static bool evaluateFormulas(std::vector<NamedFormula>& formulas) {
     return ok;
 }
 
-// Advance temporal memory for one step without pruning on violations.
-static void advanceTemporalMemory(PlannerState& state) {
-    bindState(state.lv, state.gv);
-    (void)evaluateFormulas(state.local);
-    (void)evaluateFormulas(state.global);
-}
-
 // Check all constraints at a given step under the provided state.
 static bool checkStepConstraints(PlannerState& state) {
     bindState(state.lv, state.gv);
@@ -675,7 +668,6 @@ Depth-first search over the full state. We deduplicate via visited(state).
 static bool dfsPlan(const PlannerState& state,
                     int depth,
                     int maxDepth,
-                    bool finalOnly,
                     const std::vector<std::string>& actionsList,
                     std::vector<std::string>& plan,
                     std::unordered_set<std::string>& visited) {
@@ -697,17 +689,13 @@ static bool dfsPlan(const PlannerState& state,
         PlannerState next = cloneState(state);
         applyActionInPlace(next, action);
 
-        // Either prune on step violations, or just advance temporal memory.
-        if (finalOnly) {
-            advanceTemporalMemory(next);
-        } else {
-            if (!checkStepConstraints(next)) {
-                continue;
-            }
+        // Enforce all values at this step; prune immediately on violation.
+        if (!checkStepConstraints(next)) {
+            continue;
         }
 
         plan.push_back(action);
-        if (dfsPlan(next, depth + 1, maxDepth, finalOnly, actionsList, plan, visited)) {
+        if (dfsPlan(next, depth + 1, maxDepth, actionsList, plan, visited)) {
             return true;
         }
         plan.pop_back();
@@ -716,7 +704,7 @@ static bool dfsPlan(const PlannerState& state,
 }
 
 // Find a satisfying plan up to a maximum depth bound.
-static std::vector<std::string> findPlan(int maxDepth, bool finalOnly) {
+static std::vector<std::string> findPlan(int maxDepth) {
     PlannerState initial;
     initial.lv = initial_lv_values;
     initial.gv = initial_gv_values;
@@ -724,17 +712,13 @@ static std::vector<std::string> findPlan(int maxDepth, bool finalOnly) {
     initial.global = cloneFormulas(global_formulas);
 
     // Initialize temporal memory at the initial state.
-    if (finalOnly) {
-        advanceTemporalMemory(initial);
-    } else {
-        const bool initialOk = checkStepConstraints(initial);
-        assert(initialOk);
-    }
+    const bool initialOk = checkStepConstraints(initial);
+    assert(initialOk);
 
     const std::vector<std::string> actionsList = collectActions();
     std::vector<std::string> plan;
     std::unordered_set<std::string> visited;
-    const bool found = dfsPlan(initial, 0, maxDepth, finalOnly, actionsList, plan, visited);
+    const bool found = dfsPlan(initial, 0, maxDepth, actionsList, plan, visited);
     if (!found) {
         plan.clear();
     }
@@ -954,16 +938,16 @@ static void writeOutput(const std::vector<std::string>& plan) {
 }
 
 int main(int argc, char** argv) {
+    /*
+    CLI flags:
+    - --max-depth D: depth bound for the DFS search. Default is 40.
+    */
     // Allow a configurable depth bound; default is modest for safety.
     int maxDepth = 40;
-    bool finalOnly = false;
     for (int i = 1; i < argc; i++) {
         const std::string arg = argv[i];
         if (arg == "--max-depth" && i + 1 < argc) {
             maxDepth = std::stoi(argv[++i]);
-        } else if (arg == "--final-only") {
-            // Baseline mode: do not prune on intermediate step violations.
-            finalOnly = true;
         }
     }
 
@@ -972,12 +956,11 @@ int main(int argc, char** argv) {
     // If a plan is provided, prefer it; otherwise synthesize one.
     std::vector<std::string> plan = input_actions;
     if (plan.empty()) {
-        plan = findPlan(maxDepth, finalOnly);
+        plan = findPlan(maxDepth);
     }
 
     if (plan.empty()) {
-        std::cerr << "No satisfying plan found up to depth " << maxDepth
-                  << (finalOnly ? " (final-only mode)" : "") << '\n';
+        std::cerr << "No satisfying plan found up to depth " << maxDepth << '\n';
         return 1;
     }
 

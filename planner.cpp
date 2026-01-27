@@ -1221,6 +1221,11 @@ static void writeOutput(const std::vector<std::string>& plan) {
 }
 
 int main(int argc, char** argv) {
+    /*
+    CLI flags:
+    - --L L: locality lookahead/limit parameter from the paper. Larger values
+      allow more flexibility but reduce pruning. Default is 3.
+    */
     int L = 3;  // default from the paper's traffic-light example
     for (int i = 1; i < argc; i++) {
         const std::string arg = argv[i];

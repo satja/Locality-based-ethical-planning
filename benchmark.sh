@@ -1,16 +1,25 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Benchmark the paper planner and two baselines on *.input-only.txt and emit a CSV.
+# Benchmark the locality planner and two baselines on *.input-only.txt and emit a CSV.
 # Usage:
-#   ./benchmark.sh [--dir tests] [--L 3] [--max-depth 80] [--planner-timeout 10] [--bf-timeout 30] [--final-timeout 30] [--limit 0] [--out tests/benchmark.csv]
+#   ./benchmark.sh [--dir tests] [--L 3] [--max-depth 80] [--planner-timeout 10] [--bf-timeout 30] [--auto-timeout 30] [--limit 0] [--out tests/benchmark.csv]
+# Flags:
+#   --dir DIR: directory containing *.input-only.txt (default: tests)
+#   --L L: locality parameter forwarded to ./planner --L (default: 3)
+#   --max-depth D: depth bound for baselines (default: 80)
+#   --planner-timeout S: timeout seconds for locality planner (default: 10)
+#   --bf-timeout S: timeout seconds for brute-force baseline (default: 30)
+#   --auto-timeout S: timeout seconds for automata/progression baseline (default: 30)
+#   --limit K: cap number of cases; 0 means no cap (default: 0)
+#   --out FILE: output CSV path (default: tests/benchmark.csv)
 
 DIR="tests"
 L=3
 MAX_DEPTH=80
 PLANNER_TIMEOUT=10
 BF_TIMEOUT=30
-FINAL_TIMEOUT=30
+AUTO_TIMEOUT=30
 LIMIT=0
 OUT="tests/benchmark.csv"
 
@@ -26,8 +35,8 @@ while [[ $# -gt 0 ]]; do
       PLANNER_TIMEOUT="$2"; shift 2;;
     --bf-timeout)
       BF_TIMEOUT="$2"; shift 2;;
-    --final-timeout)
-      FINAL_TIMEOUT="$2"; shift 2;;
+    --auto-timeout)
+      AUTO_TIMEOUT="$2"; shift 2;;
     --limit)
       LIMIT="$2"; shift 2;;
     --out)
@@ -101,7 +110,7 @@ run_timed() {
   echo "$status,$elapsed"
 }
 
-echo "case,n,broken_count,planner_status,planner_time_s,bruteforce_status,bruteforce_time_s,final_only_status,final_only_time_s" > "$OUT"
+echo "case,n,broken_count,planner_status,planner_time_s,bruteforce_status,bruteforce_time_s,automata_status,automata_time_s" > "$OUT"
 
 shopt -s nullglob
 case_count=0
@@ -134,17 +143,17 @@ for f in "${FILES[@]}"; do
 
   planner_out="${f%.input-only.txt}.paper.full.txt"
   bf_out="${f%.input-only.txt}.bf.full.txt"
-  final_out="${f%.input-only.txt}.final.full.txt"
+  auto_out="${f%.input-only.txt}.auto.full.txt"
 
   IFS=',' read -r planner_status planner_time < <(run_timed "$f" "$planner_out" "$PLANNER_TIMEOUT" ./planner --L "$L")
   IFS=',' read -r bf_status bf_time < <(run_timed "$f" "$bf_out" "$BF_TIMEOUT" ./bruteforce-planner --max-depth "$MAX_DEPTH")
-  IFS=',' read -r final_status final_time < <(run_timed "$f" "$final_out" "$FINAL_TIMEOUT" ./bruteforce-planner --final-only --max-depth "$MAX_DEPTH")
+  IFS=',' read -r auto_status auto_time < <(run_timed "$f" "$auto_out" "$AUTO_TIMEOUT" ./ltlf-progress-planner --max-depth "$MAX_DEPTH")
 
-  echo "$case_name,$n_val,$broken_cnt,$planner_status,$planner_time,$bf_status,$bf_time,$final_status,$final_time" >> "$OUT"
-  echo "benchmarked $case_name (planner ${planner_time}s, bf ${bf_time}s, final ${final_time}s)"
+  echo "$case_name,$n_val,$broken_cnt,$planner_status,$planner_time,$bf_status,$bf_time,$auto_status,$auto_time" >> "$OUT"
+  echo "benchmarked $case_name (planner ${planner_time}s, bf ${bf_time}s, auto ${auto_time}s)"
   case_count=$((case_count + 1))
 done
 
 # Record the configuration used for the benchmark.
-echo "# L=$L max_depth=$MAX_DEPTH planner_timeout=$PLANNER_TIMEOUT bf_timeout=$BF_TIMEOUT final_timeout=$FINAL_TIMEOUT limit=$LIMIT" >> "$OUT"
+echo "# L=$L max_depth=$MAX_DEPTH planner_timeout=$PLANNER_TIMEOUT bf_timeout=$BF_TIMEOUT auto_timeout=$AUTO_TIMEOUT limit=$LIMIT" >> "$OUT"
 echo "Wrote $OUT"

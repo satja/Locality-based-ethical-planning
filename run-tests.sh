@@ -5,13 +5,21 @@ set -u
 # - Generates full validator inputs using planner(s).
 # - Validates them with the independent validator.
 # - Avoids deprecated/ by default even if DIR=".".
+# Usage:
+#   ./run-tests.sh [paper|bruteforce|automata|both|all] [--dir DIR] [--mode MODE] [--planner-timeout S] [--bf-timeout S] [--auto-timeout S]
+# Flags:
+#   --dir DIR: directory containing *.input-only.txt (default: tests_systematic)
+#   --mode MODE: one of paper|bruteforce|automata|both|all
+#   --planner-timeout S: seconds for planner/validate in paper mode (default: 10)
+#   --bf-timeout S: seconds for bruteforce baseline/validate (default: 30)
+#   --auto-timeout S: seconds for automata baseline/validate (default: 30)
 
 L=${L:-3}
 DIR=${DIR:-tests_systematic}
-MODE=paper  # paper | bruteforce | final-only | both | all
+MODE=paper  # paper | bruteforce | automata | both | all
 PLANNER_TIMEOUT=${PLANNER_TIMEOUT:-10}
 BF_TIMEOUT=${BF_TIMEOUT:-30}
-FINAL_TIMEOUT=${FINAL_TIMEOUT:-30}
+AUTO_TIMEOUT=${AUTO_TIMEOUT:-30}
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -23,13 +31,13 @@ while [[ $# -gt 0 ]]; do
       PLANNER_TIMEOUT="$2"; shift 2;;
     --bf-timeout)
       BF_TIMEOUT="$2"; shift 2;;
-    --final-timeout)
-      FINAL_TIMEOUT="$2"; shift 2;;
-    paper|bruteforce|final-only|both|all)
+    --auto-timeout)
+      AUTO_TIMEOUT="$2"; shift 2;;
+    paper|bruteforce|automata|both|all)
       MODE="$1"; shift;;
     *)
       echo "Unknown arg: $1" >&2
-      echo "Usage: ./run-tests.sh [paper|bruteforce|final-only|both|all] [--dir DIR] [--mode MODE] [--planner-timeout S] [--bf-timeout S] [--final-timeout S]" >&2
+      echo "Usage: ./run-tests.sh [paper|bruteforce|automata|both|all] [--dir DIR] [--mode MODE] [--planner-timeout S] [--bf-timeout S] [--auto-timeout S]" >&2
       exit 2;;
   esac
 done
@@ -38,8 +46,8 @@ paper_ok=0
 paper_fail=0
 bf_ok=0
 bf_fail=0
-final_ok=0
-final_fail=0
+auto_ok=0
+auto_fail=0
 
 # Build the file list. If DIR is ".", explicitly skip deprecated/.
 FILES=()
@@ -92,28 +100,28 @@ for f in "${FILES[@]}"; do
     fi
   fi
 
-  if [[ "$MODE" == "final-only" || "$MODE" == "all" ]]; then
-    out="${base}.final.full.txt"
-    if run_with_timeout "$FINAL_TIMEOUT" ./bruteforce-planner --final-only --max-depth 80 < "$f" > "$out" \
-      && run_with_timeout "$FINAL_TIMEOUT" ./validate < "$out"; then
-      final_ok=$((final_ok + 1))
-      echo "[final] OK   $f"
+  if [[ "$MODE" == "automata" || "$MODE" == "all" ]]; then
+    out="${base}.auto.full.txt"
+    if run_with_timeout "$AUTO_TIMEOUT" ./ltlf-progress-planner --max-depth 80 < "$f" > "$out" \
+      && run_with_timeout "$AUTO_TIMEOUT" ./validate < "$out"; then
+      auto_ok=$((auto_ok + 1))
+      echo "[auto]  OK   $f"
     else
-      final_fail=$((final_fail + 1))
-      echo "[final] FAIL $f"
+      auto_fail=$((auto_fail + 1))
+      echo "[auto]  FAIL $f"
     fi
   fi
 done
 
 echo
 echo "L=$L mode=$MODE dir=$DIR"
-echo "timeouts: planner=$PLANNER_TIMEOUT bf=$BF_TIMEOUT final=$FINAL_TIMEOUT"
+echo "timeouts: planner=$PLANNER_TIMEOUT bf=$BF_TIMEOUT auto=$AUTO_TIMEOUT"
 if [[ "$MODE" == "paper" || "$MODE" == "both" || "$MODE" == "all" ]]; then
   echo "paper: ok=$paper_ok fail=$paper_fail"
 fi
 if [[ "$MODE" == "bruteforce" || "$MODE" == "both" || "$MODE" == "all" ]]; then
   echo "bruteforce: ok=$bf_ok fail=$bf_fail"
 fi
-if [[ "$MODE" == "final-only" || "$MODE" == "all" ]]; then
-  echo "final-only: ok=$final_ok fail=$final_fail"
+if [[ "$MODE" == "automata" || "$MODE" == "all" ]]; then
+  echo "automata: ok=$auto_ok fail=$auto_fail"
 fi
