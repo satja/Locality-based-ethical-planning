@@ -158,6 +158,9 @@ On these 30 cases:
 
 These counts come directly from `tests_systematic/benchmark.csv`.
 
+![Benchmark Runtime vs n](tests_systematic/benchmark-time-vs-n.png)
+![Benchmark Runtime per Case](tests_systematic/benchmark-time-vs-case.png)
+
 ### Results Discussion
 
 Across both the benchmark snapshot (30 cases) and the full batch run (57 cases
