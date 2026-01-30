@@ -1045,22 +1045,6 @@ static bool dfs(Substate& cur,
         if (finalValid(tmp, L)) return true;
     }
 
-    // Type 1 edges: apply any action that fits the current mutable window.
-    for (const ActionInfo& action : actionsList) {
-        if (!actionFitsInterval(action, cur.i, L)) continue;
-        Substate next;
-        applyAction(next, cur, action, L);
-        if (!checkAlwaysConstraints(next, L)) continue;
-        if (!globalValid(next, L)) continue;
-
-        plan.push_back(action.name);
-        if (dfs(next, L, maxIndex, plan, visited)) {
-            cur = std::move(next);
-            return true;
-        }
-        plan.pop_back();
-    }
-
     // Type 2 edge from Definition 6: move right if the leaving loc is valid.
     if (cur.i < maxIndex) {
         const int targetLoc = cur.i + 1;
@@ -1083,6 +1067,22 @@ static bool dfs(Substate& cur,
                 }
             }
         }
+    }
+
+    // Type 1 edges: apply any action that fits the current mutable window.
+    for (const ActionInfo& action : actionsList) {
+        if (!actionFitsInterval(action, cur.i, L)) continue;
+        Substate next;
+        applyAction(next, cur, action, L);
+        if (!checkAlwaysConstraints(next, L)) continue;
+        if (!globalValid(next, L)) continue;
+
+        plan.push_back(action.name);
+        if (dfs(next, L, maxIndex, plan, visited)) {
+            cur = std::move(next);
+            return true;
+        }
+        plan.pop_back();
     }
 
     return false;
