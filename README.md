@@ -67,6 +67,15 @@ g++ -std=c++17 -O2 -Wall -Wextra -pedantic ltlf-progress-planner.cpp -o ltlf-pro
 g++ -std=c++17 -O2 -Wall -Wextra -pedantic validate.cpp -o validate
 ```
 
+Single-line build:
+
+```bash
+g++ -std=c++17 -O2 -Wall -Wextra -pedantic planner.cpp -o planner && \
+g++ -std=c++17 -O2 -Wall -Wextra -pedantic bruteforce-planner.cpp -o bruteforce-planner && \
+g++ -std=c++17 -O2 -Wall -Wextra -pedantic ltlf-progress-planner.cpp -o ltlf-progress-planner && \
+g++ -std=c++17 -O2 -Wall -Wextra -pedantic validate.cpp -o validate
+```
+
 Use the input-only format as planner input, and the full format as validator input.
 
 Single-case workflow:
@@ -75,6 +84,12 @@ Single-case workflow:
 ./planner --L 3 < input-only.txt > planned.full.txt
 ./validate < planned.full.txt
 ```
+
+Planner flags:
+- `--L L`: locality parameter (default 3).
+- `--early-stop`: if there are no `F`/`U` values, stop as soon as all `FG`/`G`
+  (and non-temporal) values hold in the full current state. This can shorten
+  plans but does not change correctness.
 
 With systematic tests:
 

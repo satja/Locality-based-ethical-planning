@@ -552,6 +552,10 @@ std::unordered_map<int, std::vector<int>> values_by_loc;  // loc -> value ids
 std::vector<int> global_value_ids;                        // value ids with globals
 std::vector<int> always_value_ids;                        // value ids of type G
 
+// Early-stop configuration (set in main).
+static bool g_early_stop = false;
+static bool g_no_fu = false;
+
 // Split on a top-level " U " token (depth 0), if present.
 static std::optional<std::pair<std::string, std::string>> splitTopLevelU(const std::string& s) {
     int depth = 0;
@@ -750,6 +754,17 @@ static bool actionFitsInterval(const ActionInfo& info, int i, int L) {
     return info.minLoc >= left && info.maxLoc <= right;
 }
 
+static bool valueHasFU(const Value& v) {
+    return v.type == ValueType::F || v.type == ValueType::U;
+}
+
+static bool noFUValues() {
+    for (const Value& v : values) {
+        if (valueHasFU(v)) return false;
+    }
+    return true;
+}
+
 // ----- Substate search -----
 
 /*
@@ -771,6 +786,16 @@ static bool stateModels(formula* psi, const Substate& s) {
     assert(psi != nullptr);
     bindState(s.lv, s.gv);
     return psi->evaluate() == 1;
+}
+
+static bool fullFGGOk(const Substate& s) {
+    for (const Value& v : values) {
+        if (v.type == ValueType::F || v.type == ValueType::U) {
+            continue;
+        }
+        if (!stateModels(v.psi1, s)) return false;
+    }
+    return true;
 }
 
 static bool valueOnlyActive(const Value& v, int i, int L) {
@@ -1033,6 +1058,10 @@ static bool dfs(Substate& cur,
                 int maxIndex,
                 std::vector<std::string>& plan,
                 std::unordered_set<std::string>& visited) {
+    if (g_early_stop && g_no_fu) {
+        if (fullFGGOk(cur)) return true;
+    }
+
     // visited(S) from Algorithm 1: skip substates already explored.
     const std::string sig = signature(cur, L);
     if (visited.find(sig) != visited.end()) {
@@ -1300,18 +1329,25 @@ int main(int argc, char** argv) {
     CLI flags:
     - --L L: locality lookahead/limit parameter from the paper. Larger values
       allow more flexibility but reduce pruning. Default is 3.
+    - --early-stop: if there are no F/U values, stop as soon as all FG/G
+      formulas hold in the full current state (may return shorter plans).
     */
     int L = 3;  // default from the paper's traffic-light example
+    bool earlyStop = false;
     for (int i = 1; i < argc; i++) {
         const std::string arg = argv[i];
         if (arg == "--L" && i + 1 < argc) {
             L = std::max(1, std::stoi(argv[++i]));
+        } else if (arg == "--early-stop") {
+            earlyStop = true;
         }
     }
 
     readProblem(std::cin);
     buildValuesIndex();
     buildActionInfo();
+    g_early_stop = earlyStop;
+    g_no_fu = noFUValues();
 
     std::vector<std::string> plan = input_actions;
     bool found = true;
