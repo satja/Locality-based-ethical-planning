@@ -105,6 +105,7 @@
 %% article.
 \begin{abstract}
 Linear Temporal Logic (LTL) enables specifying expressive, complex constraints over sequences of actions.  A framework for logic-based ethical planning with intended application to robotics was introduced by Grandi et al. in 2022. There, several planning tasks have been shown to be intractable (PSPACE-complete). Using additional assumptions at the cost of generality, we define a constrained version of the CONFLICT problem that is polynomially solvable and present the algorithm that solves it. Motivated from various real-world examples such as robots operating in linear trajectories, we assume that most propositions are {\it localized} in the following sense: there is an ordering of the localized propositions such that each action depends on, and changes, only the propositions from an interval of bounded length. In addition, there is a constant number of {\it global} propositions for which there are no such constraints: any action can use or change their truth values. We additionally assume that the local ordering of propositions constrains the temporal order of actions. Under these assumptions, CONFLICT can be solved in polynomial time. The proposed framework can be instrumental in cases were problems require complex spatial robot movement on linear trajectories, especially if work is performed in the presence of humans. Potential collision of a robot with a human could cause serious injury or fatality. Thus, both  expressiveness of constraints, affecting choices of the robot's future actions, and speed of their evaluation are crucial to provide proper reactions in unpredictable working environment.
+A benchmark-based empirical evaluation shows that the proposed locality-based method is substantially faster than the considered baselines on structured locality instances.
 \end{abstract}
 
 %\begin{abstract}
@@ -140,12 +141,13 @@ A set of moral values $\Omega$ consists of LTL formulas \cite{4567924} that desc
 
 Grandi et al. \cite{grandi2022logic} have shown that several planning tasks are intractable (PSPACE-complete). Namely, CONFLICT is shown to be PSPACE-complete using reduction from the propositional STRIPS planning problem called PLANSAT \cite{BYLANDER1994165}. The difficulty of the problem arises from the exponential number of possible plans.
 Using additional assumptions at the cost of generality, we define a constrained version of the CONFLICT problem and present the algorithm to solve it. Namely, to enable polynomial complexity, we restrict actions to affect only a local set of propositions. 
+To complement the theoretical analysis, Section \ref{eval} reports an empirical comparison against brute-force and automata/progression baselines.
 
 Such restricted, but computationally efficient setting allows modelling a plethora of real-world scenarios involving planning. One example includes utilizing propositions to express properties involving linear space order. Many robots involved in repairs or manufacturing adhere to such constraints (e.g. robots used to pick and pack food in the factories, gantry robots used in automotive industry, some robots dispatching pallets in the warehouses, in electronic chip manufacturing or pharmaceutical industry in drug production). Utilizing proposed logic, these robots could move back and forth satisfying expressive, complex constraints. One important constraint is not to harm human workers that might cross the path of the traversing robots. This shows the importance of having the possibility to add moral constraints in the planning process  to create safe, flexible and efficient robots.    
 %dodati motivaciju + zadatke
 
 
-The paper is organized as follows. Sect. \ref{related} describes the related work. In Sect. \ref{lbp} we describe the framework and the proposed algorithm. In Sect. \ref{example} we present an example. Conclusions are given in Sect. \ref{conc}.
+The paper is organized as follows. Sect. \ref{related} describes the related work. In Sect. \ref{lbp} we describe the framework and the proposed algorithm. In Sect. \ref{example} we present examples. Sect. \ref{eval} reports benchmark-based evaluation. Conclusions are given in Sect. \ref{conc}.
 \section{Related Work}\label{related}
 
 Logic-based temporal planning has previously been studied in the context of robotics and autonomous systems. Various approaches have been used to address uncertainty, efficiency, and fairness in decision-making. Significant focus has been on using LTL, as well as probabilistic temporal logic \cite{konur2011realtimeprobabilistictemporallogics}, to define and schedule complex tasks in dynamic and uncertain environments. 
@@ -678,9 +680,58 @@ A satisfying plan is:
 The robot repairs required cells and detours around occupied crossing zones by switching lanes before entering unsafe cells.
 This example is two-dimensional in geometry, but remains one-dimensional in locality indexing with a fixed-width augmentation, which is exactly the regime targeted by our complexity assumptions.
 
+\section{Evaluation}\label{eval}
+
+This section evaluates whether the theoretical locality advantage translates into practical runtime gains. We compare three planners under a common protocol: the proposed locality-based planner, a brute-force planner with online value pruning, and an automata/progression $LTL_f$ baseline. The automata/progression baseline follows the standard finite-trace temporal-logic approach in which search is performed on a product between planning states and temporal-monitor states \cite{degiacomo2013ltlf,camacho2018finite}; operationally, each value formula is represented by a residual formula that is progressed after each action. In all experiments, every produced plan is checked by an independent validator, so correctness is not inferred from internal planner state.
+
+\subsection{Setup}
+
+The benchmark set consists of 57 systematically generated instances with problem size $n\in[6,24]$ and three instances per size. These instances follow the traffic-light locality structure used throughout the paper: actions depend on and modify bounded neighborhoods, while values include global safety constraints and eventual local repair goals. The generation procedure is deterministic and size-ordered, with broken-light configurations chosen to avoid trivial adjacency patterns whenever possible. This design provides controlled growth in instance size while preserving the locality assumptions studied in Section \ref{aa}.
+
+All methods are run with the same maximum search depth (160) and evaluated per instance under fixed runtime limits. We use a stricter limit for the locality planner (10 seconds) and a looser limit for both baselines (30 seconds), so the comparison does not disadvantage the non-local methods. The locality parameter is fixed at $L=3$, matching the locality structure of the benchmark family. A run is counted as successful only if a planner returns a plan within the time limit and that plan is accepted by independent validation. Reported planning times exclude validation time, so runtime values represent planner-only cost.
+
+\subsection{Results}
+
+Table \ref{t:eval} summarizes success counts and runtime statistics. The locality planner solves all 57 instances, and the automata/progression baseline also solves all 57 instances. The brute-force baseline solves 47 instances and times out on 10. Runtime statistics are computed over successful runs only: the locality planner has mean runtime 0.001s, median 0.00s, and maximum 0.01s; the automata/progression baseline has mean 1.26s, median 0.01s, and maximum 22.89s; and the brute-force baseline has mean 2.90s, median 0.02s, and maximum 27.66s.
+
+\begin{table}[ht!]
+\centering
+\caption{Benchmark summary over 57 instances.}
+\label{t:eval}
+\begin{tabular}{lccccc}
+\toprule
+Method & Success & Timeout & Mean (s) & Median (s) & Max (s) \\
+\midrule
+Locality-based planner & 57/57 & 0 & 0.001 & 0.00 & 0.01 \\
+Automata/progression baseline & 57/57 & 0 & 1.26 & 0.01 & 22.89 \\
+Brute-force baseline & 47/57 & 10 & 2.90 & 0.02 & 27.66 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Results Discussion}
+
+The central empirical observation is that locality-aware state compression dominates on this benchmark family. Even with the strictest time budget, the locality planner solves every instance and remains in a near-constant time regime across the tested range of $n$. By contrast, the two baselines exhibit heavier tails in runtime, especially on larger instances. The automata/progression baseline remains complete on this set, but its worst-case runtime is orders of magnitude larger than that of the locality planner. This behavior is expected: progression-based search tracks temporal residuals over a larger effective product space and does not directly exploit interval locality in the same explicit way.
+
+The brute-force baseline shows the weakest scalability. Its median successful runtime is small, indicating that easy instances are handled quickly, but the timeout count demonstrates loss of robustness as size increases. This gap between median and timeout behavior is important: median-only summaries would hide the heavy-tail effect, while the success/timeout statistics reveal practical reliability.
+
+These results are consistent with the theory from Section \ref{pa}. The proposed method keeps only a bounded active window of local propositions (plus global propositions and temporal satisfaction memory) and shifts this window left-to-right. In structured domains that satisfy the locality assumptions, this restriction sharply reduces branching and effective state size. The baselines rely on more general temporal-monitoring search and therefore pay a larger per-instance overhead.
+
+At the same time, the interpretation should remain scoped to the evaluated regime. The benchmark family is intentionally locality-structured and therefore aligned with the assumptions of our algorithm. This is a strength for validating the intended use case, but it is not evidence that the same margins will hold on domains with weak locality or different temporal-value distributions. A broader study with additional domain families, parameter sweeps over $L$, and cross-platform timing would provide a stronger estimate of external validity.
+
+\begin{figure}[ht!]
+\begin{center}
+\includegraphics[width=0.48\textwidth]{benchmark-time-vs-n.png}
+\includegraphics[width=0.48\textwidth]{benchmark-time-vs-case.png}
+\caption{Benchmark plots: runtime versus instance size $n$ (left) and runtime per case (right).}
+\label{f3}
+\end{center}
+\end{figure}
+
 \section{Conclusion}\label{conc}
 
 We introduced a locality-based approach to solving the CONFLICT problem in ethical planning using Linear Temporal Logic (LTL). By incorporating assumptions on the structure of the problem, the distinction between global and local propositions and the constraints on the scope and sequence of actions, we were able to reduce the complexity of the problem from PSPACE-complete to polynomial time. The introduced concept of localized planning restricts the actions to only affect and depend on propositions within a bounded interval. It incorporates constraints on the temporal order of actions based on this interval. Due to possibility of large constant factors in the algorithm complexity, there might be a tradeoff between efficiency and flexibility. We consider the proposed algorithm to be practical   for real-world applications with small values of constants $K$, $L$, and $M$, ie, the applications with "high locality".
+The evaluation in Section \ref{eval} supports this claim by showing strong runtime and robustness advantages on systematic locality-structured benchmarks.
 
 Overall, our work offers a promising direction for efficient and scalable ethical planning in autonomous systems and robotics. By constraining the problem space in a principled way, we enable the development of action plans that adhere to predefined values, ensuring ethical behavior in complex, dynamic environments. Future research could explore extending this framework to accommodate more complex moral structures and larger sets of global propositions, as well as applying these methods to real-world robotic systems and other automated decision-making contexts.
 
