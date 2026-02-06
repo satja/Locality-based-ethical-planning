@@ -619,6 +619,65 @@ The last substate is indeed final since $i=n-2L$ and all active propositions are
 to $\Theta$. The validity of previous local propositions, such as $on_1$, has been verified as part of the "move" operation according
 to Definition \ref{g}, while the truth of $G \neg congestion$ was verified in each substate according to Definition \ref{invalid}.
 
+\subsection{Narrow Factory Grid (2D)}\label{ex3}
+
+The previous examples are effectively one-dimensional: intersections are ordered along a road.
+We now show a two-dimensional setting that still satisfies the locality assumptions when one dimension is small.
+Consider a long production line with $n$ columns and $W$ parallel conveyor lanes, where $W$ is a fixed small constant (eg, $W=3$).
+The robot can move forward along the line and switch between neighboring lanes. Human workers occasionally cross the lanes, and the robot must avoid collisions.
+
+We index each cell by $(i,y)$ where $i\in\{1,\dots,n\}$ is the column and $y\in\{1,\dots,W\}$ is the lane.
+The key modeling choice is to map locality to columns, ie, we define $loc(\cdot)=i$ for every proposition indexed by $(i,y)$.
+This keeps the "long" direction explicit, while the lane index is absorbed into the bounded number of propositions per location.
+Formally,
+\begin{equation}
+\begin{aligned}
+Loc = \bigcup_{i=1}^n \{robot_{i,y}, broken_{i,y}, done_{i,y}, human_{i,y}: y=1,\dots,W\},\\
+Glob=\{collision\}.
+\end{aligned}
+\end{equation}
+Hence each location $i$ has at most $4W$ local propositions, so $M=4W$ is constant when $W$ is fixed.
+
+Let $R\subseteq \{1,\dots,n\}\times\{1,\dots,W\}$ be the set of stations that must be serviced.
+The value set is
+\begin{equation}
+\Omega=\{G\neg collision\}\ \cup\ \{FG\,done_{i,y}:(i,y)\in R\}.
+\end{equation}
+Thus, collisions are always forbidden, and every required station must eventually be repaired and remain repaired.
+
+We use three action families:
+\begin{itemize}
+    \item {\it Forward move} $m_{i,y}$ for $1\le i<n$: move from $(i,y)$ to $(i+1,y)$.
+    \item {\it Lane change} $s_{i,y\to y'}$ for $|y-y'|=1$: move at fixed column $i$ from lane $y$ to lane $y'$.
+    \item {\it Repair} $rep_{i,y}$: repair station at $(i,y)$.
+\end{itemize}
+Representative effects are:
+\begin{multline}
+\gamma^-(m_{i,y},robot_{i,y})=\gamma^+(m_{i,y},robot_{i+1,y})=\top,\\
+\gamma^+(m_{i,y},collision)=human_{i+1,y},
+\end{multline}
+\begin{multline}
+\gamma^-(s_{i,y\to y'},robot_{i,y})=\gamma^+(s_{i,y\to y'},robot_{i,y'})=\top,\\
+\gamma^+(s_{i,y\to y'},collision)=human_{i,y'},
+\end{multline}
+\begin{multline}
+\gamma^-(rep_{i,y},broken_{i,y})=\gamma^+(rep_{i,y},done_{i,y})=robot_{i,y}\land \neg human_{i,y},\\
+\gamma^+(rep_{i,y},collision)=robot_{i,y}\land human_{i,y}.
+\end{multline}
+All other effects are $\bot$. In this model, move actions touch only columns $i$ and $i+1$, lane changes and repairs touch only column $i$, and all of them may touch one global proposition ($collision$). Therefore $r(a)-l(a)\le 1$ for all actions, so the locality requirement is satisfied for $L=2$.
+
+As a concrete instance, let $n=12$, $W=3$, $R=\{(3,2),(7,2),(9,2)\}$, and let the initial robot position be $(1,2)$.
+Suppose crossing zones $(4,2)$ and $(8,2)$ are occupied by humans.
+A satisfying plan is:
+\begin{equation*}
+\begin{split}
+\pi = (&m_{1,2}, m_{2,2}, rep_{3,2}, s_{3,2\to 3}, m_{3,3}, m_{4,3}, s_{5,3\to 2},\\
+      &m_{5,2}, m_{6,2}, rep_{7,2}, s_{7,2\to 1}, m_{7,1}, m_{8,1}, s_{9,1\to 2}, rep_{9,2}).
+\end{split}
+\end{equation*}
+The robot repairs required cells and detours around occupied crossing zones by switching lanes before entering unsafe cells.
+This example is two-dimensional in geometry, but remains one-dimensional in locality indexing with a fixed-width augmentation, which is exactly the regime targeted by our complexity assumptions.
+
 \section{Conclusion}\label{conc}
 
 We introduced a locality-based approach to solving the CONFLICT problem in ethical planning using Linear Temporal Logic (LTL). By incorporating assumptions on the structure of the problem, the distinction between global and local propositions and the constraints on the scope and sequence of actions, we were able to reduce the complexity of the problem from PSPACE-complete to polynomial time. The introduced concept of localized planning restricts the actions to only affect and depend on propositions within a bounded interval. It incorporates constraints on the temporal order of actions based on this interval. Due to possibility of large constant factors in the algorithm complexity, there might be a tradeoff between efficiency and flexibility. We consider the proposed algorithm to be practical   for real-world applications with small values of constants $K$, $L$, and $M$, ie, the applications with "high locality".
