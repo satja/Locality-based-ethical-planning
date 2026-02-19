@@ -146,3 +146,31 @@ plt.close(fig)
 
 print(f"Wrote {out1}")
 print(f"Wrote {out2}")
+
+# ---- Plot 3: locality-only detail view ----
+fig, (axl, axr) = plt.subplots(1, 2, figsize=(10, 4))
+
+planner_ms = [1000.0 * d[4] for d in planner_ok]
+planner_n = [d[1] for d in planner_ok]
+axl.scatter(planner_n, planner_ms, alpha=0.85, label="locality runs")
+if px:
+    axl.plot(px, [1000.0 * y for y in py], linestyle="--", label="mean by n")
+axl.set_title("Locality Runtime vs n")
+axl.set_xlabel("n (number of intersections)")
+axl.set_ylabel("time (ms)")
+axl.grid(True, alpha=0.3)
+axl.legend()
+
+planner_ms_all = [1000.0 * t for t in planner_times]
+axr.plot(planner_ms_all, marker="o", linewidth=1.2)
+axr.set_title("Locality Runtime per Case")
+axr.set_xlabel("case index")
+axr.set_ylabel("time (ms)")
+axr.grid(True, alpha=0.3)
+
+out3 = OUT_DIR / "benchmark-time-locality.png"
+fig.tight_layout()
+fig.savefig(out3, dpi=160)
+plt.close(fig)
+
+print(f"Wrote {out3}")
