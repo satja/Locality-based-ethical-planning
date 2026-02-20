@@ -24,6 +24,7 @@ a.out
 # Benchmarks and plots (generated)
 benchmark*.csv
 benchmark*.png
+!figures/benchmark*.png
 tests_systematic/benchmark*.csv
 tests_systematic/benchmark*.png
 
