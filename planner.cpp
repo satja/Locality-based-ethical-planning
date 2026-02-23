@@ -126,7 +126,8 @@ class formula {
         std::string op = "";
         int ind = 0;
         if (f[0] == '(') {
-            if (f[2] == 'F') {
+            const bool maybeUnaryPrefix = f.size() >= 5 && f[1] != '(';
+            if (maybeUnaryPrefix && f[2] == 'F') {
                 op += "F";
                 if (f[3] == 'G') {
                     if (f[4] == ' ') {
@@ -136,7 +137,7 @@ class formula {
                 } else if (f[3] == ' ') {
                     ind = 3;
                 }
-            } else if (f[2] == 'G') {
+            } else if (maybeUnaryPrefix && f[2] == 'G') {
                 op += "G";
                 if (f[3] == 'F') {
                     if (f[4] == ' ') {
@@ -146,10 +147,10 @@ class formula {
                 } else if (f[3] == ' ') {
                     ind = 3;
                 }
-            } else if (f[2] == 'X') {
+            } else if (maybeUnaryPrefix && f[2] == 'X') {
                 op += "X";
                 ind = 3;
-            } else if (f[2] == 'N' && f[3] == 'O' && f[4] == 'T') {
+            } else if (maybeUnaryPrefix && f[2] == 'N' && f[3] == 'O' && f[4] == 'T') {
                 op += "NOT";
                 ind = 5;
             }

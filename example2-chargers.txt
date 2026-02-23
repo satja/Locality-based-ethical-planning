@@ -2,14 +2,14 @@ on1, on2, on3, on4, on5, on6, on7, on8, on9, on10, broken1, broken2, broken3, br
 congestion, lowBattery
 TRUE, FALSE, TRUE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, TRUE, FALSE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE
 FALSE, FALSE
-- f2 broken2 : ((NOT (on1)) OR (NOT (on3))) AND (NOT (lowBattery))
-- f3 broken3 : ((NOT (on2)) OR (NOT (on4))) AND (NOT (lowBattery))
-- f4 broken4 : ((NOT (on3)) OR (NOT (on5))) AND (NOT (lowBattery))
-- f5 broken5 : ((NOT (on4)) OR (NOT (on6))) AND (NOT (lowBattery))
-- f6 broken6 : ((NOT (on5)) OR (NOT (on7))) AND (NOT (lowBattery))
-- f7 broken7 : ((NOT (on6)) OR (NOT (on8))) AND (NOT (lowBattery))
-- f8 broken8 : ((NOT (on7)) OR (NOT (on9))) AND (NOT (lowBattery))
-- f9 broken9 : ((NOT (on8)) OR (NOT (on10))) AND (NOT (lowBattery))
+- f2 broken2 : ( (NOT (on1)) OR (NOT (on3))) AND ( (NOT (lowBattery)))
+- f3 broken3 : ( (NOT (on2)) OR (NOT (on4))) AND ( (NOT (lowBattery)))
+- f4 broken4 : ( (NOT (on3)) OR (NOT (on5))) AND ( (NOT (lowBattery)))
+- f5 broken5 : ( (NOT (on4)) OR (NOT (on6))) AND ( (NOT (lowBattery)))
+- f6 broken6 : ( (NOT (on5)) OR (NOT (on7))) AND ( (NOT (lowBattery)))
+- f7 broken7 : ( (NOT (on6)) OR (NOT (on8))) AND ( (NOT (lowBattery)))
+- f8 broken8 : ( (NOT (on7)) OR (NOT (on9))) AND ( (NOT (lowBattery)))
+- f9 broken9 : ( (NOT (on8)) OR (NOT (on10))) AND ( (NOT (lowBattery)))
 - f1 broken1 : NOT (lowBattery)
 - f10 broken10 : NOT (lowBattery)
 - g1 on1 : NOT (lowBattery)
@@ -31,15 +31,15 @@ FALSE, FALSE
 - c7 lowBattery : TRUE
 - c8 lowBattery : TRUE
 - c9 lowBattery : TRUE
-+ f2 on2 : ((NOT (on1)) OR (NOT (on3))) AND (NOT (lowBattery))
-+ f3 on3 : ((NOT (on2)) OR (NOT (on4))) AND (NOT (lowBattery))
-+ f4 on4 : ((NOT (on3)) OR (NOT (on5))) AND (NOT (lowBattery))
++ f2 on2 : ( (NOT (on1)) OR (NOT (on3))) AND ( (NOT (lowBattery)))
++ f3 on3 : ( (NOT (on2)) OR (NOT (on4))) AND ( (NOT (lowBattery)))
++ f4 on4 : ( (NOT (on3)) OR (NOT (on5))) AND ( (NOT (lowBattery)))
 + f4 lowBattery : TRUE
-+ f5 on5 : ((NOT (on4)) OR (NOT (on6))) AND (NOT (lowBattery))
-+ f6 on6 : ((NOT (on5)) OR (NOT (on7))) AND (NOT (lowBattery))
-+ f7 on7 : ((NOT (on6)) OR (NOT (on8))) AND (NOT (lowBattery))
-+ f8 on8 : ((NOT (on7)) OR (NOT (on9))) AND (NOT (lowBattery))
-+ f9 on9 : ((NOT (on8)) OR (NOT (on10))) AND (NOT (lowBattery))
++ f5 on5 : ( (NOT (on4)) OR (NOT (on6))) AND ( (NOT (lowBattery)))
++ f6 on6 : ( (NOT (on5)) OR (NOT (on7))) AND ( (NOT (lowBattery)))
++ f7 on7 : ( (NOT (on6)) OR (NOT (on8))) AND ( (NOT (lowBattery)))
++ f8 on8 : ( (NOT (on7)) OR (NOT (on9))) AND ( (NOT (lowBattery)))
++ f9 on9 : ( (NOT (on8)) OR (NOT (on10))) AND ( (NOT (lowBattery)))
 + f1 on1 : NOT (lowBattery)
 + f10 on10 : NOT (lowBattery)
 + h1 on1 : NOT (broken1) AND (NOT (lowBattery))
