@@ -177,7 +177,7 @@ Behavior:
   `0` means valid, `1` means invalid, `2` means skipped because the planner
   failed or timed out. Validation is not included in the timing.
 
-### Current Benchmark Snapshot (January 30, 2026)
+### Current Benchmark Snapshot (February 24, 2026)
 
 The checked-in benchmark and plots were generated with:
 
@@ -194,11 +194,17 @@ The checked-in benchmark and plots were generated with:
 python3 plot-benchmarks.py --csv tests_systematic/benchmark.csv
 ```
 
-On these 57 cases (validation enabled):
+To keep plots in the paper figure directory:
 
-- Locality planner successes: 57 / 57 (all 57 validated).
-- Automata baseline successes: 57 / 57 (all 57 validated).
-- Brute-force successes: 47 / 57 (47 validated, 10 timeouts).
+```bash
+python3 plot-benchmarks.py --csv tests_systematic/benchmark.csv --out-dir figures
+```
+
+On the full 190-case suite (validation enabled):
+
+- Locality planner successes: 84 / 190 (84 validated, 106 timeouts).
+- Automata baseline successes: 122 / 190 (122 validated, 68 timeouts).
+- Brute-force successes: 96 / 190 (96 validated, 94 timeouts).
 
 These counts come directly from `tests_systematic/benchmark.csv`.
 Here, “success” means the planner exited with status `0` within the configured
@@ -206,27 +212,34 @@ timeout. With `--validate`, all successful outputs are also checked by
 `./validate`.
 
 Runtime summary (successful runs only):
-- Locality planner: mean 0.001s, median 0.00s, max 0.01s.
-- Automata baseline: mean 1.26s, median 0.01s, max 22.89s.
-- Brute force: mean 2.90s, median 0.02s, max 27.66s.
+- Locality planner: mean 0.908s, median 0.06s, max 8.86s.
+- Automata baseline: mean 2.743s, median 0.16s, max 27.70s.
+- Brute force: mean 4.246s, median 0.61s, max 28.48s.
 
-![Benchmark Runtime vs n](tests_systematic/benchmark-time-vs-n.png)
-![Benchmark Runtime per Case](tests_systematic/benchmark-time-vs-case.png)
+Mann-Whitney U tests using timeout-capped per-instance runtimes:
+- locality vs brute-force: `p = 1.13e-11`
+- locality vs automata/progression: `p = 0.0123`
+
+![Benchmark Runtime vs n](figures/benchmark-time-vs-n.png)
+![Benchmark Runtime per Case](figures/benchmark-time-vs-case.png)
 
 ### Results Discussion
 
-The locality-based planner is consistently fastest and solved all 57 cases
-within the 10s timeout. The automata/progression baseline also solved all 57
-cases, but with substantially higher average runtime and several multi-second
-instances. The brute-force baseline timed out on 16 cases under the 30s bound,
-even though its median successful time is small.
+The updated run shows a clear speed/completeness tradeoff across methods under
+the fixed timeout budget. Locality has the strongest successful-run speed
+(smallest mean and median), but the lowest completion rate on this full suite.
+The automata/progression baseline achieves the highest completion rate. The
+brute-force baseline sits between the two in completion, with the heaviest tail
+in runtime among solved instances.
 
 A practical reading of the comparison is:
 
-- Locality pruning dominates in this structured domain.
-- Automata/progression pruning is helpful but does not exploit the
-  interval/locality structure, so it pays a higher per-instance cost.
-- Brute-force step pruning is the weakest of the three under the current bounds.
+- Locality compression gives strong speed when it succeeds, but at `L=3` it is
+  not complete on many larger generated cases.
+- Automata/progression is more robust on this suite, at the cost of higher
+  runtime.
+- Brute-force is generally slower than locality and less robust than automata,
+  but solves substantially more cases than locality on this run.
 
 ### Plotting
 
@@ -239,11 +252,14 @@ python3 plot-benchmarks.py --csv tests_systematic/benchmark.csv
 This writes plots next to the CSV (by default):
 - `tests_systematic/benchmark-time-vs-n.png`
 - `tests_systematic/benchmark-time-vs-case.png`
+- `tests_systematic/benchmark-time-locality.png`
+- `tests_systematic/benchmark-time-median-iqr-vs-n.png`
+- `tests_systematic/benchmark-stats.txt`
 
 If needed, you can choose a different output folder:
 
 ```bash
-python3 plot-benchmarks.py --csv tests_systematic/benchmark.csv --out-dir tests_systematic
+python3 plot-benchmarks.py --csv tests_systematic/benchmark.csv --out-dir figures
 ```
 
 Flag details for plotting live in `plot-benchmarks.py`.
@@ -262,23 +278,6 @@ If you point it at `--dir .`, it will skip `deprecated/`.
 
 Flag details for the test runner live in `run-tests.sh`.
 
-### Current Test Snapshot (January 27, 2026)
-
-A full batch run across `tests_systematic/` with bounded timeouts:
-
-```bash
-./run-tests.sh all \
-  --dir tests_systematic \
-  --planner-timeout 10 \
-  --bf-timeout 5 \
-  --auto-timeout 2
-```
-
-Results on 57 cases:
-
-- Locality planner: 56 ok, 1 fail (`case-0`).
-- Brute force: 16 ok, 41 fail.
-- Automata baseline: 31 ok, 26 fail.
-
-In the test runner, “ok” means both the planner/baseline and `validate` exited
-with status `0` within their timeouts.
+For reproducible quantitative comparisons, prefer `benchmark.sh` over
+`run-tests.sh`, because it stores per-case runtimes and statuses in a CSV and
+drives the plotting/statistics workflow used in the paper.

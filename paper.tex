@@ -105,7 +105,7 @@
 %% article.
 \begin{abstract}
 Linear Temporal Logic (LTL) enables specifying expressive, complex constraints over sequences of actions.  A framework for logic-based ethical planning with intended application to robotics was introduced by Grandi et al. in 2022. There, several planning tasks have been shown to be intractable (PSPACE-complete). Using additional assumptions at the cost of generality, we define a constrained version of the CONFLICT problem that is polynomially solvable and present the algorithm that solves it. Motivated from various real-world examples such as robots operating in linear trajectories, we assume that most propositions are {\it localized} in the following sense: there is an ordering of the localized propositions such that each action depends on, and changes, only the propositions from an interval of bounded length. In addition, there is a constant number of {\it global} propositions for which there are no such constraints: any action can use or change their truth values. We additionally assume that the local ordering of propositions constrains the temporal order of actions. Under these assumptions, CONFLICT can be solved in polynomial time. The proposed framework can be instrumental in cases where problems require complex spatial robot movement on linear trajectories, especially if work is performed in the presence of humans. Potential collision of a robot with a human could cause serious injury or fatality. Thus, both  expressiveness of constraints, affecting choices of the robot's future actions, and speed of their evaluation are crucial to provide proper reactions in unpredictable working environment.
-A benchmark-based empirical evaluation across multiple simulated robotic domains shows that the proposed locality-based method is substantially faster and more robust than the considered baselines on structured locality instances.
+A benchmark-based empirical evaluation across multiple simulated robotic domains shows that the proposed locality-based method achieves the best solved-instance runtime profile, while exposing a clear speed--robustness tradeoff against broader baselines under fixed timeout budgets.
 \end{abstract}
 
 %\begin{abstract}
@@ -143,7 +143,7 @@ Grandi et al. \cite{grandi2022logic} have shown that several planning tasks are 
 Using additional assumptions at the cost of generality, we define a constrained version of the CONFLICT problem and present the algorithm to solve it. Namely, to enable polynomial complexity, we restrict actions to affect only a local set of propositions, introducing the {\it locality} assumption. 
 
 The proposed framework allows modelling many real-world scenarios involving planning. One example includes utilizing propositions to express properties involving linear space order. Many robots involved in repairs or manufacturing adhere to such constraints (e.g. robots used to pick and pack food in the factories, gantry robots used in automotive industry, robots dispatching pallets in the warehouses, robots in electronic chip manufacturing or pharmaceutical production). Utilizing proposed logic, these robots could move back and forth satisfying expressive, complex constraints. One important constraint is not to harm human workers that might cross the path of the traversing robots. This shows the importance of having the possibility to add moral constraints in the planning process  to create safe, flexible and efficient robots.    
-To complement the theoretical analysis, we perform an empirical comparison against brute-force and automata/progression baselines on systematic instances derived from the three examples in this paper.
+To complement the theoretical analysis, we perform an empirical comparison against brute-force and automata/progression baselines on systematic instances derived from the three examples in this paper, and report both runtime and completion behavior under fixed timeout budgets.
 
 The paper is organized as follows. Sect. \ref{related} describes the related work. In Sect. \ref{lbp} we describe the framework and the proposed algorithm. In Sect. \ref{example} we present examples. Sect. \ref{eval} reports benchmark-based evaluation. Conclusions are given in Sect. \ref{conc}.
 \section{Related Work}\label{related}
@@ -703,10 +703,10 @@ All methods are run with the same maximum search depth (160) and evaluated per i
 
 \subsection{Results}
 
-Table \ref{t:eval} summarizes success counts and runtime statistics on the full 190-instance suite. The locality-based planner solves all 190 instances within the 10-second limit and all 190 outputs are validated. The automata/progression baseline solves 116 instances and times out on 74, with all 116 successful outputs validated. The brute-force baseline solves 97 instances and times out on 93, with all 97 successful outputs validated. Runtime statistics are computed over successful runs only: the locality planner has mean runtime 0.146s, median 0.02s, and maximum 1.21s; the automata/progression baseline has mean 1.95s, median 0.20s, and maximum 22.67s; and the brute-force baseline has mean 4.76s, median 0.51s, and maximum 28.92s.
+Table \ref{t:eval} summarizes success counts and runtime statistics on the full 190-instance suite. The locality-based planner solves 84 instances within the 10-second limit and times out on 106, with all 84 successful outputs validated. The automata/progression baseline solves 122 instances and times out on 68, with all 122 successful outputs validated. The brute-force baseline solves 96 instances and times out on 94, with all 96 successful outputs validated. Runtime statistics are computed over successful runs only: the locality planner has mean runtime 0.908s, median 0.06s, and maximum 8.86s; the automata/progression baseline has mean 2.743s, median 0.16s, and maximum 27.70s; and the brute-force baseline has mean 4.246s, median 0.61s, and maximum 28.48s.
 
-To test whether the runtime advantage is statistically significant at the distribution level, we apply one-sided Mann--Whitney U tests with alternative hypothesis that locality runtimes are smaller than baseline runtimes. Using per-instance planner times (including timeout-capped values), we obtain $p=9.88\times 10^{-45}$ for locality versus brute force and $p=1.08\times 10^{-28}$ for locality versus automata/progression. These results strongly support the claim that the locality approach is systematically faster on this benchmark regime.
-Because the locality planner's maximum runtime (1.21s) is far below its 10-second timeout cap, the asymmetric timeout thresholds (10s for locality, 30s for baselines) do not artificially skew the Mann--Whitney rank ordering in favor of locality.
+To test whether the runtime advantage is statistically significant at the distribution level, we apply one-sided Mann--Whitney U tests with alternative hypothesis that locality runtimes are smaller than baseline runtimes. Using per-instance planner times (including timeout-capped values), we obtain $p=1.13\times 10^{-11}$ for locality versus brute force and $p=1.23\times 10^{-2}$ for locality versus automata/progression. These results indicate that locality is faster in distribution on this benchmark regime, but they do not imply higher completion robustness under the same timeout policy.
+Because the locality planner's maximum successful runtime (8.86s) is below its 10-second timeout cap, the asymmetric timeout thresholds (10s for locality, 30s for baselines) do not artificially skew the Mann--Whitney rank ordering in favor of locality.
 
 \begin{table}[ht!]
 \centering
@@ -716,14 +716,14 @@ Because the locality planner's maximum runtime (1.21s) is far below its 10-secon
 \toprule
 Method & Success & Timeout & Mean (s) & Median (s) & Max (s) \\
 \midrule
-Locality-based planner & 190/190 & 0 & 0.146 & 0.02 & 1.21 \\
-Automata/progression baseline & 116/190 & 74 & 1.95 & 0.20 & 22.67 \\
-Brute-force baseline & 97/190 & 93 & 4.76 & 0.51 & 28.92 \\
+Locality-based planner & 84/190 & 106 & 0.908 & 0.06 & 8.86 \\
+Automata/progression baseline & 122/190 & 68 & 2.743 & 0.16 & 27.70 \\
+Brute-force baseline & 96/190 & 94 & 4.246 & 0.61 & 28.48 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-To make the cross-example effect explicit, Table \ref{t:eval-families} reports success counts separately for the three benchmark families. The locality planner remains complete in each family. The automata/progression baseline is complete on the first and second families, but loses robustness on the three-lane family. The brute-force baseline loses robustness already on the second family and further on larger three-lane instances.
+To make the cross-example effect explicit, Table \ref{t:eval-families} reports success counts separately for the three benchmark families. The automata/progression baseline is strongest on Example 1 and Example 2, while the brute-force baseline is strongest on Example 3. The locality planner has the best solved-instance speed profile, but its completion rate degrades substantially on Example 2 and Example 3 under the fixed $L=3$ and timeout settings.
 
 \begin{table}[ht!]
 \centering
@@ -733,9 +733,9 @@ To make the cross-example effect explicit, Table \ref{t:eval-families} reports s
 \toprule
 Family & Locality-based & Automata/progression & Brute-force \\
 \midrule
-Example 1 (linear traffic lights, 76 instances) & 76/76 & 63/76 & 50/76 \\
-Example 2 (charging extension, 57 instances) & 57/57 & 35/57 & 20/57 \\
-Example 3 (three-lane corridor, 57 instances) & 57/57 & 18/57 & 27/57 \\
+Example 1 (linear traffic lights, 76 instances) & 56/76 & 65/76 & 44/76 \\
+Example 2 (charging extension, 57 instances) & 16/57 & 36/57 & 17/57 \\
+Example 3 (three-lane corridor, 57 instances) & 12/57 & 21/57 & 35/57 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -760,19 +760,19 @@ Example 3 (three-lane corridor, 57 instances) & 57/57 & 18/57 & 27/57 \\
 
 \subsection{Results Discussion}
 
-The central empirical observation is that locality-aware state compression dominates across all three benchmark families, not only on the base linear family. Even with the strictest time budget, the locality planner solves every instance and stays well below two seconds on every run. This is important because the three families stress different parts of the model: the first emphasizes local repair propagation with global congestion safety, the second adds charging-related propositions and additional temporal obligations, and the third introduces lane switches and collision-avoidance structure in a narrow two-dimensional geometry.
-Figure \ref{f3} provides the requested aggregate view by number of intersections using robust summary statistics: for each method, the median runtime grows with $n$, and the dashed bands show the interquartile range. Figure \ref{f3local} complements this by isolating only the locality planner. This view confirms that locality runtime still increases with instance difficulty, but on a much smaller scale than for the baselines.
+The central empirical observation is a speed--robustness tradeoff. On successful runs, locality-aware state compression yields the best runtime profile, but under the fixed setting $L=3$ and a 10-second budget, the locality planner times out frequently on larger generated instances. This matters because the three families stress different parts of the model: the first emphasizes local repair propagation with global congestion safety, the second adds charging-related propositions and additional temporal obligations, and the third introduces lane switches and collision-avoidance structure in a narrow two-dimensional geometry.
+Figure \ref{f3} provides the aggregate view by number of intersections using robust summary statistics: for each method, the median runtime grows with $n$, and the dashed bands show the interquartile range. Figure \ref{f3local} complements this by isolating only the locality planner. This view confirms that locality runtime is often low when a solution is found, but also shows a widening hard-instance region where runs hit the timeout cap.
 
-The baseline behavior is heterogeneous by family, which helps explain aggregate statistics. On Example 1, both baselines remain strong for most sizes, although brute force still times out on larger instances. On Example 2, the automata/progression baseline remains complete but with noticeably higher runtime than the locality method, while brute force times out on most instances. On Example 3, which combines movement, lane switching, and safety constraints in a richer local transition system, both baselines exhibit significant timeout rates, and the automata/progression baseline also loses completeness under the fixed timeout.
+The baseline behavior is heterogeneous by family, which helps explain aggregate statistics. On Example 1, automata/progression has the highest completion and locality also remains competitive, while brute force starts to lose robustness. On Example 2, automata/progression clearly dominates completion and both locality and brute force time out on most instances. On Example 3, brute force becomes the most robust of the three, while automata/progression and locality both have high timeout rates under the fixed limits.
 
-These results are consistent with the theory from Section \ref{pa}. The proposed method keeps only a bounded active window of local propositions, together with global propositions and compact temporal-status memory, and shifts this window left-to-right. In domains that satisfy locality assumptions, this sharply limits effective state growth as $n$ increases. The automata/progression baseline, by construction, explores product states that combine planning valuations with residual temporal formulas, so temporal monitoring overhead increases with structural complexity even when locality is present. The brute-force baseline suffers most from direct state-space growth because it does not exploit structural compression beyond local pruning checks.
+These results are partially consistent with the theory from Section \ref{pa}. The proposed method keeps only a bounded active window of local propositions, together with global propositions and compact temporal-status memory, and shifts this window left-to-right. This mechanism explains the low successful-run runtimes. At the same time, the finite timeout evaluation shows that this configuration is sensitive to hard instances and parameterization, so practical robustness does not automatically follow from asymptotic locality structure alone. The automata/progression baseline, by construction, explores product states that combine planning valuations with residual temporal formulas, which adds temporal-monitor overhead but appears to provide better search robustness on two of the three families. The brute-force baseline suffers from heavy tails in runtime yet remains comparatively robust on the third family.
 
 At the same time, interpretation should remain scoped to the evaluated regime. All three families are locality-structured by design and therefore aligned with the assumptions of our algorithm. This is appropriate for validating the intended use case and stronger than evaluating only one family, but it is still not evidence that the same margins will hold on domains with weak locality or substantially different temporal-value distributions. %A broader study with additional non-local families, parameter sweeps over $L$, and cross-platform timing would provide a stronger estimate of external validity.
 
 \section{Conclusion}\label{conc}
 
 We introduced a locality-based approach to solving the CONFLICT problem in ethical planning using Linear Temporal Logic (LTL). By incorporating assumptions on the structure of the problem, the distinction between global and local propositions and the constraints on the scope and sequence of actions, we were able to reduce the complexity of the problem from PSPACE-complete to polynomial time. The introduced concept of localized planning restricts the actions to only affect and depend on propositions within a bounded interval. It incorporates constraints on the temporal order of actions based on this interval. Due to possibility of large constant factors in the algorithm complexity, there might be a tradeoff between efficiency and flexibility. We consider the proposed algorithm to be practical   for real-world applications with small values of constants $K$, $L$, and $M$, ie, the applications with "high locality".
-The evaluation in Section \ref{eval} supports this claim by showing strong runtime and robustness advantages on systematic locality-structured benchmarks spanning all three example families.
+The evaluation in Section \ref{eval} supports this claim in runtime terms on solved instances, while also revealing nontrivial robustness limits under fixed timeout budgets and parameter choices.
 
 Overall, our work offers a promising direction for efficient and scalable ethical planning in autonomous systems and robotics. By constraining the problem space in a principled way, we enable the development of action plans that adhere to predefined values, ensuring ethical behavior in complex, dynamic environments. Future research could explore extending this framework to accommodate more complex moral structures and larger sets of global propositions, as well as applying these methods to real-world robotic systems and other automated decision-making contexts.
 
