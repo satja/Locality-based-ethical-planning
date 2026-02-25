@@ -903,8 +903,33 @@ static bool evaluateFormulas(std::vector<NamedFormula>& formulas,
     return ok;
 }
 
-/* Apply one action to the current global state using gamma^- then gamma^+. */
+/*
+Apply one action using pre-state semantics from Eq. (4):
+- evaluate all gamma^- / gamma^+ conditions on the same snapshot H_t
+- then apply removals and additions to produce H_{t+1}
+*/
 static void applyAction(const std::string& action) {
+    // Snapshot current state for condition evaluation.
+    int* live_lv = lv_values;
+    int* live_gv = gv_values;
+    const int live_lv_size = lvSize;
+    const int live_gv_size = gvSize;
+
+    std::vector<int> snap_lv;
+    snap_lv.assign(live_lv, live_lv + live_lv_size);
+    std::vector<int> snap_gv;
+    if (live_gv_size > 0 && live_gv != nullptr) {
+        snap_gv.assign(live_gv, live_gv + live_gv_size);
+    }
+
+    lv_values = snap_lv.data();
+    gv_values = snap_gv.empty() ? nullptr : snap_gv.data();
+    lvSize = live_lv_size;
+    gvSize = live_gv_size;
+
+    std::vector<std::string> minus_true;
+    std::vector<std::string> plus_true;
+
     const auto minusIt = gammaMinus.find(action);
     if (minusIt != gammaMinus.end()) {
         const auto& tmpMinus = minusIt->second;
@@ -913,22 +938,8 @@ static void applyAction(const std::string& action) {
             formula* f = entry.second;
             assert(f != nullptr);
             const int val = f->evaluate();
-
             if (val == 1) {
-                const auto lvIt = lv_key.find(prop);
-                if (lvIt != lv_key.end()) {
-                    const int key = lvIt->second;
-                    const auto idxIt = lKey_index.find(key);
-                    assert(idxIt != lKey_index.end());
-                    lv_values[idxIt->second] = 0;
-                } else {
-                    const auto gvIt = gv_key.find(prop);
-                    assert(gvIt != gv_key.end());
-                    const int key = gvIt->second;
-                    const auto idxIt = gKey_index.find(key);
-                    assert(idxIt != gKey_index.end());
-                    gv_values[idxIt->second] = 0;
-                }
+                minus_true.push_back(prop);
             }
         }
     }
@@ -941,25 +952,39 @@ static void applyAction(const std::string& action) {
             formula* f = entry.second;
             assert(f != nullptr);
             const int val = f->evaluate();
-
             if (val == 1) {
-                const auto lvIt = lv_key.find(prop);
-                if (lvIt != lv_key.end()) {
-                    const int key = lvIt->second;
-                    const auto idxIt = lKey_index.find(key);
-                    assert(idxIt != lKey_index.end());
-                    lv_values[idxIt->second] = 1;
-                } else {
-                    const auto gvIt = gv_key.find(prop);
-                    assert(gvIt != gv_key.end());
-                    const int key = gvIt->second;
-                    const auto idxIt = gKey_index.find(key);
-                    assert(idxIt != gKey_index.end());
-                    gv_values[idxIt->second] = 1;
-                }
+                plus_true.push_back(prop);
             }
         }
     }
+
+    // Restore live-state pointers and apply updates.
+    lv_values = live_lv;
+    gv_values = live_gv;
+    lvSize = live_lv_size;
+    gvSize = live_gv_size;
+
+    auto apply_props = [&](const std::vector<std::string>& props, int value) {
+        for (const std::string& prop : props) {
+            const auto lvIt = lv_key.find(prop);
+            if (lvIt != lv_key.end()) {
+                const int key = lvIt->second;
+                const auto idxIt = lKey_index.find(key);
+                assert(idxIt != lKey_index.end());
+                lv_values[idxIt->second] = value;
+            } else {
+                const auto gvIt = gv_key.find(prop);
+                assert(gvIt != gv_key.end());
+                const int key = gvIt->second;
+                const auto idxIt = gKey_index.find(key);
+                assert(idxIt != gKey_index.end());
+                gv_values[idxIt->second] = value;
+            }
+        }
+    };
+
+    apply_props(minus_true, 0);
+    apply_props(plus_true, 1);
 }
 
 /* Validate the provided action sequence against all values in Omega. */

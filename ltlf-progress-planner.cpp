@@ -1078,7 +1078,12 @@ static std::string state_signature(const AutomataState& s) {
 }
 
 static void apply_action_in_place(AutomataState& state, const std::string& action) {
-    bindState(state.lv, state.gv);
+    const std::vector<int> pre_lv = state.lv;
+    const std::vector<int> pre_gv = state.gv;
+    bindState(pre_lv, pre_gv);
+
+    std::vector<std::string> minus_true;
+    std::vector<std::string> plus_true;
 
     const auto minusIt = gammaMinus.find(action);
     if (minusIt != gammaMinus.end()) {
@@ -1089,20 +1094,7 @@ static void apply_action_in_place(AutomataState& state, const std::string& actio
             assert(f != nullptr);
             const int val = f->evaluate();
             if (val == 1) {
-                const auto lvIt = lv_key.find(prop);
-                if (lvIt != lv_key.end()) {
-                    const int key = lvIt->second;
-                    const auto idxIt = lKey_index.find(key);
-                    assert(idxIt != lKey_index.end());
-                    state.lv[idxIt->second] = 0;
-                } else {
-                    const auto gvIt = gv_key.find(prop);
-                    assert(gvIt != gv_key.end());
-                    const int key = gvIt->second;
-                    const auto idxIt = gKey_index.find(key);
-                    assert(idxIt != gKey_index.end());
-                    state.gv[idxIt->second] = 0;
-                }
+                minus_true.push_back(prop);
             }
         }
     }
@@ -1116,23 +1108,32 @@ static void apply_action_in_place(AutomataState& state, const std::string& actio
             assert(f != nullptr);
             const int val = f->evaluate();
             if (val == 1) {
-                const auto lvIt = lv_key.find(prop);
-                if (lvIt != lv_key.end()) {
-                    const int key = lvIt->second;
-                    const auto idxIt = lKey_index.find(key);
-                    assert(idxIt != lKey_index.end());
-                    state.lv[idxIt->second] = 1;
-                } else {
-                    const auto gvIt = gv_key.find(prop);
-                    assert(gvIt != gv_key.end());
-                    const int key = gvIt->second;
-                    const auto idxIt = gKey_index.find(key);
-                    assert(idxIt != gKey_index.end());
-                    state.gv[idxIt->second] = 1;
-                }
+                plus_true.push_back(prop);
             }
         }
     }
+
+    auto apply_props = [&](const std::vector<std::string>& props, int value) {
+        for (const std::string& prop : props) {
+            const auto lvIt = lv_key.find(prop);
+            if (lvIt != lv_key.end()) {
+                const int key = lvIt->second;
+                const auto idxIt = lKey_index.find(key);
+                assert(idxIt != lKey_index.end());
+                state.lv[idxIt->second] = value;
+            } else {
+                const auto gvIt = gv_key.find(prop);
+                assert(gvIt != gv_key.end());
+                const int key = gvIt->second;
+                const auto idxIt = gKey_index.find(key);
+                assert(idxIt != gKey_index.end());
+                state.gv[idxIt->second] = value;
+            }
+        }
+    };
+
+    apply_props(minus_true, 0);
+    apply_props(plus_true, 1);
 }
 
 struct QueueNode {

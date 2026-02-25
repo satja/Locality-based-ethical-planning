@@ -593,6 +593,7 @@ std::vector<int> always_value_ids;                        // value ids of type G
 static bool g_early_stop = false;
 static bool g_no_fu = false;
 static bool g_has_u = false;
+static int g_max_depth = 160;  // max number of actions in synthesized plan
 
 // Split on a top-level " U " token (depth 0), if present.
 static std::optional<std::pair<std::string, std::string>> splitTopLevelU(const std::string& s) {
@@ -1167,6 +1168,10 @@ static bool dfs(Substate& cur,
                 int maxIndex,
                 std::vector<std::string>& plan,
                 std::unordered_set<std::string>& visited) {
+    if (g_max_depth >= 0 && static_cast<int>(plan.size()) > g_max_depth) {
+        return false;
+    }
+
     // For no-F/U instances, once all FG/G/non-temporal conditions hold in the
     // current state, continuing with extra actions is unnecessary.
     if (g_early_stop && g_no_fu) {
@@ -1187,6 +1192,9 @@ static bool dfs(Substate& cur,
 
     auto tryActions = [&]() -> bool {
         for (const ActionInfo& action : actionsList) {
+            if (g_max_depth >= 0 && static_cast<int>(plan.size()) >= g_max_depth) {
+                break;
+            }
             if (!actionFitsInterval(action, cur.i, L)) continue;
             Substate next;
             if (!applyAction(next, cur, action, L)) continue;
@@ -1441,15 +1449,20 @@ int main(int argc, char** argv) {
     CLI flags:
     - --L L: locality lookahead/limit parameter from the paper. Larger values
       allow more flexibility but reduce pruning. Default is 3.
+    - --max-depth D: maximum number of action steps in the synthesized plan
+      (default: 160). Use -1 to disable this bound.
     - --early-stop: if there are no F/U values, stop as soon as all FG/G
       formulas hold in the full current state (may return shorter plans).
     */
     int L = 3;  // default from the paper's traffic-light example
+    int maxDepth = 160;
     bool earlyStop = false;
     for (int i = 1; i < argc; i++) {
         const std::string arg = argv[i];
         if (arg == "--L" && i + 1 < argc) {
             L = std::max(1, std::stoi(argv[++i]));
+        } else if (arg == "--max-depth" && i + 1 < argc) {
+            maxDepth = std::stoi(argv[++i]);
         } else if (arg == "--early-stop") {
             earlyStop = true;
         }
@@ -1459,6 +1472,7 @@ int main(int argc, char** argv) {
     buildValuesIndex();
     buildActionInfo();
     g_early_stop = earlyStop;
+    g_max_depth = maxDepth;
     g_no_fu = noFUValues();
     g_has_u = hasUValues();
 

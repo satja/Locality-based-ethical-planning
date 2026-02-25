@@ -303,38 +303,41 @@ static void write_case_ex3(const fs::path& out_path,
     out << "FALSE\n";
 
     for (int i = 1; i <= n - 1; i++) {
-        out << "- mA" << i << " ra" << i << " : TRUE\n";
-        out << "+ mA" << i << " ra" << (i + 1) << " : TRUE\n";
-        out << "+ mA" << i << " collision : ha" << (i + 1) << "\n";
+        out << "- mA" << i << " ra" << i << " : ra" << i << "\n";
+        out << "+ mA" << i << " ra" << (i + 1) << " : ra" << i << "\n";
+        out << "+ mA" << i << " collision : ra" << i << " AND ha" << (i + 1) << "\n";
 
-        out << "- mB" << i << " rb" << i << " : TRUE\n";
-        out << "+ mB" << i << " rb" << (i + 1) << " : TRUE\n";
-        out << "+ mB" << i << " collision : hb" << (i + 1) << "\n";
+        out << "- mB" << i << " rb" << i << " : rb" << i << "\n";
+        out << "+ mB" << i << " rb" << (i + 1) << " : rb" << i << "\n";
+        out << "+ mB" << i << " collision : rb" << i << " AND hb" << (i + 1) << "\n";
 
-        out << "- mC" << i << " rc" << i << " : TRUE\n";
-        out << "+ mC" << i << " rc" << (i + 1) << " : TRUE\n";
-        out << "+ mC" << i << " collision : hc" << (i + 1) << "\n";
+        out << "- mC" << i << " rc" << i << " : rc" << i << "\n";
+        out << "+ mC" << i << " rc" << (i + 1) << " : rc" << i << "\n";
+        out << "+ mC" << i << " collision : rc" << i << " AND hc" << (i + 1) << "\n";
     }
 
+    std::unordered_set<int> service_set(service_indices.begin(), service_indices.end());
     for (int i = 1; i <= n; i++) {
-        out << "- sAB" << i << " ra" << i << " : TRUE\n";
-        out << "+ sAB" << i << " rb" << i << " : TRUE\n";
-        out << "+ sAB" << i << " collision : hb" << i << "\n";
+        out << "- sAB" << i << " ra" << i << " : ra" << i << "\n";
+        out << "+ sAB" << i << " rb" << i << " : ra" << i << "\n";
+        out << "+ sAB" << i << " collision : ra" << i << " AND hb" << i << "\n";
 
-        out << "- sBA" << i << " rb" << i << " : TRUE\n";
-        out << "+ sBA" << i << " ra" << i << " : TRUE\n";
-        out << "+ sBA" << i << " collision : ha" << i << "\n";
+        out << "- sBA" << i << " rb" << i << " : rb" << i << "\n";
+        out << "+ sBA" << i << " ra" << i << " : rb" << i << "\n";
+        out << "+ sBA" << i << " collision : rb" << i << " AND ha" << i << "\n";
 
-        out << "- sBC" << i << " rb" << i << " : TRUE\n";
-        out << "+ sBC" << i << " rc" << i << " : TRUE\n";
-        out << "+ sBC" << i << " collision : hc" << i << "\n";
+        out << "- sBC" << i << " rb" << i << " : rb" << i << "\n";
+        out << "+ sBC" << i << " rc" << i << " : rb" << i << "\n";
+        out << "+ sBC" << i << " collision : rb" << i << " AND hc" << i << "\n";
 
-        out << "- sCB" << i << " rc" << i << " : TRUE\n";
-        out << "+ sCB" << i << " rb" << i << " : TRUE\n";
-        out << "+ sCB" << i << " collision : hb" << i << "\n";
+        out << "- sCB" << i << " rc" << i << " : rc" << i << "\n";
+        out << "+ sCB" << i << " rb" << i << " : rc" << i << "\n";
+        out << "+ sCB" << i << " collision : rc" << i << " AND hb" << i << "\n";
 
-        out << "+ repB" << i << " done" << i << " : rb" << i << " AND (NOT (hb" << i << "))\n";
-        out << "+ repB" << i << " collision : rb" << i << " AND hb" << i << "\n";
+        if (service_set.count(i)) {
+            out << "+ repB" << i << " done" << i << " : rb" << i << " AND (NOT (hb" << i << "))\n";
+            out << "+ repB" << i << " collision : rb" << i << " AND hb" << i << "\n";
+        }
     }
 
     for (int idx : service_indices) out << "l : ( FG (done" << idx << "))\n";
