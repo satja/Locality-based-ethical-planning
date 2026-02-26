@@ -177,7 +177,7 @@ Behavior:
   `0` means valid, `1` means invalid, `2` means skipped because the planner
   failed or timed out. Validation is not included in the timing.
 
-### Current Benchmark Snapshot (February 24, 2026)
+### Current Benchmark Snapshot (February 25, 2026)
 
 The checked-in benchmark and plots were generated with:
 
@@ -204,8 +204,8 @@ python3 plot-benchmarks.py --csv tests_systematic/benchmark.csv --out-dir figure
 On the full 110-case suite (validation enabled):
 
 - Locality planner successes: 110 / 110 (all 110 validated).
-- Automata baseline successes: 85 / 110 (85 validated, 25 timeouts).
-- Brute-force successes: 79 / 110 (79 validated, 31 timeouts).
+- Automata baseline successes: 100 / 110 (100 validated, 10 timeouts).
+- Brute-force successes: 89 / 110 (89 validated, 21 timeouts).
 
 These counts come directly from `tests_systematic/benchmark.csv`.
 Here, “success” means the planner exited with status `0` within the configured
@@ -213,13 +213,13 @@ timeout. With `--validate`, all successful outputs are also checked by
 `./validate`.
 
 Runtime summary (successful runs only):
-- Locality planner: mean 0.046s, median 0.00s, max 0.35s.
-- Automata baseline: mean 0.706s, median 0.04s, max 10.10s.
-- Brute force: mean 1.981s, median 0.21s, max 14.57s.
+- Locality planner: mean 0.041s, median 0.00s, max 0.33s.
+- Automata baseline: mean 0.280s, median 0.03s, max 9.93s.
+- Brute force: mean 1.283s, median 0.18s, max 11.79s.
 
 Mann-Whitney U tests using timeout-capped per-instance runtimes:
-- locality vs brute-force: `p = 7.61e-26`
-- locality vs automata/progression: `p = 1.66e-13`
+- locality vs brute-force: `p = 7.71e-27`
+- locality vs automata/progression: `p = 6.57e-12`
 
 ![Benchmark Runtime vs n](figures/benchmark-time-vs-n.png)
 ![Benchmark Runtime per Case](figures/benchmark-time-vs-case.png)
@@ -227,17 +227,18 @@ Mann-Whitney U tests using timeout-capped per-instance runtimes:
 ### Results Discussion
 
 The updated run shows that the optimized locality planner is both fast and
-robust on this smaller systematic suite: it solved all instances within the
-same 15s timeout budget used for the baselines, with the lowest successful-run
-runtime profile.
+robust on this systematic suite: it solved all instances within the same 15s
+timeout budget used for the baselines, with the lowest successful-run runtime
+profile.
 
 A practical reading of the comparison is:
 
-- Locality compression now dominates both in runtime and completion on this
-  benchmark configuration.
-- Automata/progression remains a strong baseline, but has many timeout-capped
-  cases at higher sizes.
-- Brute-force remains the slowest baseline and times out frequently.
+- Locality compression dominates in runtime and remains complete on the full
+  suite.
+- Automata/progression is robust overall, with failures concentrated in the
+  charging family.
+- Brute-force improves relative to earlier runs but still has the highest
+  timeout count among the three methods.
 
 ### Plotting
 

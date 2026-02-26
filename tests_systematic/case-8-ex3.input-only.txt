@@ -2,133 +2,125 @@ ra1, ra2, ra3, ra4, ra5, ra6, rb1, rb2, rb3, rb4, rb5, rb6, rc1, rc2, rc3, rc4, 
 collision
 FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE
 FALSE
-- mA1 ra1 : TRUE
-+ mA1 ra2 : TRUE
-+ mA1 collision : ha2
-- mB1 rb1 : TRUE
-+ mB1 rb2 : TRUE
-+ mB1 collision : hb2
-- mC1 rc1 : TRUE
-+ mC1 rc2 : TRUE
-+ mC1 collision : hc2
-- mA2 ra2 : TRUE
-+ mA2 ra3 : TRUE
-+ mA2 collision : ha3
-- mB2 rb2 : TRUE
-+ mB2 rb3 : TRUE
-+ mB2 collision : hb3
-- mC2 rc2 : TRUE
-+ mC2 rc3 : TRUE
-+ mC2 collision : hc3
-- mA3 ra3 : TRUE
-+ mA3 ra4 : TRUE
-+ mA3 collision : ha4
-- mB3 rb3 : TRUE
-+ mB3 rb4 : TRUE
-+ mB3 collision : hb4
-- mC3 rc3 : TRUE
-+ mC3 rc4 : TRUE
-+ mC3 collision : hc4
-- mA4 ra4 : TRUE
-+ mA4 ra5 : TRUE
-+ mA4 collision : ha5
-- mB4 rb4 : TRUE
-+ mB4 rb5 : TRUE
-+ mB4 collision : hb5
-- mC4 rc4 : TRUE
-+ mC4 rc5 : TRUE
-+ mC4 collision : hc5
-- mA5 ra5 : TRUE
-+ mA5 ra6 : TRUE
-+ mA5 collision : ha6
-- mB5 rb5 : TRUE
-+ mB5 rb6 : TRUE
-+ mB5 collision : hb6
-- mC5 rc5 : TRUE
-+ mC5 rc6 : TRUE
-+ mC5 collision : hc6
-- sAB1 ra1 : TRUE
-+ sAB1 rb1 : TRUE
-+ sAB1 collision : hb1
-- sBA1 rb1 : TRUE
-+ sBA1 ra1 : TRUE
-+ sBA1 collision : ha1
-- sBC1 rb1 : TRUE
-+ sBC1 rc1 : TRUE
-+ sBC1 collision : hc1
-- sCB1 rc1 : TRUE
-+ sCB1 rb1 : TRUE
-+ sCB1 collision : hb1
-+ repB1 done1 : rb1 AND (NOT (hb1))
-+ repB1 collision : rb1 AND hb1
-- sAB2 ra2 : TRUE
-+ sAB2 rb2 : TRUE
-+ sAB2 collision : hb2
-- sBA2 rb2 : TRUE
-+ sBA2 ra2 : TRUE
-+ sBA2 collision : ha2
-- sBC2 rb2 : TRUE
-+ sBC2 rc2 : TRUE
-+ sBC2 collision : hc2
-- sCB2 rc2 : TRUE
-+ sCB2 rb2 : TRUE
-+ sCB2 collision : hb2
-+ repB2 done2 : rb2 AND (NOT (hb2))
-+ repB2 collision : rb2 AND hb2
-- sAB3 ra3 : TRUE
-+ sAB3 rb3 : TRUE
-+ sAB3 collision : hb3
-- sBA3 rb3 : TRUE
-+ sBA3 ra3 : TRUE
-+ sBA3 collision : ha3
-- sBC3 rb3 : TRUE
-+ sBC3 rc3 : TRUE
-+ sBC3 collision : hc3
-- sCB3 rc3 : TRUE
-+ sCB3 rb3 : TRUE
-+ sCB3 collision : hb3
+- mA1 ra1 : ra1
++ mA1 ra2 : ra1
++ mA1 collision : ra1 AND ha2
+- mB1 rb1 : rb1
++ mB1 rb2 : rb1
++ mB1 collision : rb1 AND hb2
+- mC1 rc1 : rc1
++ mC1 rc2 : rc1
++ mC1 collision : rc1 AND hc2
+- mA2 ra2 : ra2
++ mA2 ra3 : ra2
++ mA2 collision : ra2 AND ha3
+- mB2 rb2 : rb2
++ mB2 rb3 : rb2
++ mB2 collision : rb2 AND hb3
+- mC2 rc2 : rc2
++ mC2 rc3 : rc2
++ mC2 collision : rc2 AND hc3
+- mA3 ra3 : ra3
++ mA3 ra4 : ra3
++ mA3 collision : ra3 AND ha4
+- mB3 rb3 : rb3
++ mB3 rb4 : rb3
++ mB3 collision : rb3 AND hb4
+- mC3 rc3 : rc3
++ mC3 rc4 : rc3
++ mC3 collision : rc3 AND hc4
+- mA4 ra4 : ra4
++ mA4 ra5 : ra4
++ mA4 collision : ra4 AND ha5
+- mB4 rb4 : rb4
++ mB4 rb5 : rb4
++ mB4 collision : rb4 AND hb5
+- mC4 rc4 : rc4
++ mC4 rc5 : rc4
++ mC4 collision : rc4 AND hc5
+- mA5 ra5 : ra5
++ mA5 ra6 : ra5
++ mA5 collision : ra5 AND ha6
+- mB5 rb5 : rb5
++ mB5 rb6 : rb5
++ mB5 collision : rb5 AND hb6
+- mC5 rc5 : rc5
++ mC5 rc6 : rc5
++ mC5 collision : rc5 AND hc6
+- sAB1 ra1 : ra1
++ sAB1 rb1 : ra1
++ sAB1 collision : ra1 AND hb1
+- sBA1 rb1 : rb1
++ sBA1 ra1 : rb1
++ sBA1 collision : rb1 AND ha1
+- sBC1 rb1 : rb1
++ sBC1 rc1 : rb1
++ sBC1 collision : rb1 AND hc1
+- sCB1 rc1 : rc1
++ sCB1 rb1 : rc1
++ sCB1 collision : rc1 AND hb1
+- sAB2 ra2 : ra2
++ sAB2 rb2 : ra2
++ sAB2 collision : ra2 AND hb2
+- sBA2 rb2 : rb2
++ sBA2 ra2 : rb2
++ sBA2 collision : rb2 AND ha2
+- sBC2 rb2 : rb2
++ sBC2 rc2 : rb2
++ sBC2 collision : rb2 AND hc2
+- sCB2 rc2 : rc2
++ sCB2 rb2 : rc2
++ sCB2 collision : rc2 AND hb2
+- sAB3 ra3 : ra3
++ sAB3 rb3 : ra3
++ sAB3 collision : ra3 AND hb3
+- sBA3 rb3 : rb3
++ sBA3 ra3 : rb3
++ sBA3 collision : rb3 AND ha3
+- sBC3 rb3 : rb3
++ sBC3 rc3 : rb3
++ sBC3 collision : rb3 AND hc3
+- sCB3 rc3 : rc3
++ sCB3 rb3 : rc3
++ sCB3 collision : rc3 AND hb3
 + repB3 done3 : rb3 AND (NOT (hb3))
 + repB3 collision : rb3 AND hb3
-- sAB4 ra4 : TRUE
-+ sAB4 rb4 : TRUE
-+ sAB4 collision : hb4
-- sBA4 rb4 : TRUE
-+ sBA4 ra4 : TRUE
-+ sBA4 collision : ha4
-- sBC4 rb4 : TRUE
-+ sBC4 rc4 : TRUE
-+ sBC4 collision : hc4
-- sCB4 rc4 : TRUE
-+ sCB4 rb4 : TRUE
-+ sCB4 collision : hb4
-+ repB4 done4 : rb4 AND (NOT (hb4))
-+ repB4 collision : rb4 AND hb4
-- sAB5 ra5 : TRUE
-+ sAB5 rb5 : TRUE
-+ sAB5 collision : hb5
-- sBA5 rb5 : TRUE
-+ sBA5 ra5 : TRUE
-+ sBA5 collision : ha5
-- sBC5 rb5 : TRUE
-+ sBC5 rc5 : TRUE
-+ sBC5 collision : hc5
-- sCB5 rc5 : TRUE
-+ sCB5 rb5 : TRUE
-+ sCB5 collision : hb5
-+ repB5 done5 : rb5 AND (NOT (hb5))
-+ repB5 collision : rb5 AND hb5
-- sAB6 ra6 : TRUE
-+ sAB6 rb6 : TRUE
-+ sAB6 collision : hb6
-- sBA6 rb6 : TRUE
-+ sBA6 ra6 : TRUE
-+ sBA6 collision : ha6
-- sBC6 rb6 : TRUE
-+ sBC6 rc6 : TRUE
-+ sBC6 collision : hc6
-- sCB6 rc6 : TRUE
-+ sCB6 rb6 : TRUE
-+ sCB6 collision : hb6
+- sAB4 ra4 : ra4
++ sAB4 rb4 : ra4
++ sAB4 collision : ra4 AND hb4
+- sBA4 rb4 : rb4
++ sBA4 ra4 : rb4
++ sBA4 collision : rb4 AND ha4
+- sBC4 rb4 : rb4
++ sBC4 rc4 : rb4
++ sBC4 collision : rb4 AND hc4
+- sCB4 rc4 : rc4
++ sCB4 rb4 : rc4
++ sCB4 collision : rc4 AND hb4
+- sAB5 ra5 : ra5
++ sAB5 rb5 : ra5
++ sAB5 collision : ra5 AND hb5
+- sBA5 rb5 : rb5
++ sBA5 ra5 : rb5
++ sBA5 collision : rb5 AND ha5
+- sBC5 rb5 : rb5
++ sBC5 rc5 : rb5
++ sBC5 collision : rb5 AND hc5
+- sCB5 rc5 : rc5
++ sCB5 rb5 : rc5
++ sCB5 collision : rc5 AND hb5
+- sAB6 ra6 : ra6
++ sAB6 rb6 : ra6
++ sAB6 collision : ra6 AND hb6
+- sBA6 rb6 : rb6
++ sBA6 ra6 : rb6
++ sBA6 collision : rb6 AND ha6
+- sBC6 rb6 : rb6
++ sBC6 rc6 : rb6
++ sBC6 collision : rb6 AND hc6
+- sCB6 rc6 : rc6
++ sCB6 rb6 : rc6
++ sCB6 collision : rc6 AND hb6
 + repB6 done6 : rb6 AND (NOT (hb6))
 + repB6 collision : rb6 AND hb6
 l : ( FG (done3))
