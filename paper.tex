@@ -104,8 +104,13 @@
 %% The abstract is a short summary of the work to be presented in the
 %% article.
 \begin{abstract}
-Linear Temporal Logic (LTL) enables specifying expressive, complex constraints over sequences of actions.  A framework for logic-based ethical planning with intended application to robotics was introduced by Grandi et al. in 2022. There, several planning tasks have been shown to be intractable (PSPACE-complete). Using additional assumptions at the cost of generality, we define a constrained version of the CONFLICT problem that is polynomially solvable and present the algorithm that solves it. Motivated from various real-world examples such as robots operating in linear trajectories, we assume that most propositions are {\it localized} in the following sense: there is an ordering of the localized propositions such that each action depends on, and changes, only the propositions from an interval of bounded length. In addition, there is a constant number of {\it global} propositions for which there are no such constraints: any action can use or change their truth values. We additionally assume that the local ordering of propositions constrains the temporal order of actions. Under these assumptions, CONFLICT can be solved in polynomial time. The proposed framework can be instrumental in cases where problems require complex spatial robot movement on linear trajectories, especially if work is performed in the presence of humans. Potential collision of a robot with a human could cause serious injury or fatality. Thus, both  expressiveness of constraints, affecting choices of the robot's future actions, and speed of their evaluation are crucial to provide proper reactions in unpredictable working environment.
-A benchmark-based empirical evaluation across multiple simulated robotic domains shows that the optimized locality-based method is substantially faster and more robust than the considered baselines on structured locality instances.
+\textbf{Objective:} We study the CONFLICT problem in logic-based ethical planning with Linear Temporal Logic (LTL) values, which is PSPACE-complete in general, and target a tractable fragment relevant to structured robotic domains.
+
+\textbf{Method:} We introduce locality assumptions over propositions and actions: most propositions are indexed along an ordered local axis, each action depends on and modifies only a bounded interval, the number of global propositions is constant, and locality also constrains feasible temporal action order. Under these assumptions, we derive a polynomial-time locality-based planning algorithm.
+
+\textbf{Results:} We evaluate against brute-force and automata/progression baselines on a deterministic 110-instance benchmark suite spanning three modeled robotic families (linear traffic lights, charging extension, and narrow three-lane corridor). With a common 15-second timeout and independent validation, the locality planner solves 110/110 instances, while automata/progression solves 105/110 and brute force 90/110. The locality method also has the lowest runtime distribution and significantly smaller per-instance runtimes in one-sided Mann--Whitney U tests.
+
+\textbf{Conclusion:} Locality-aware state compression yields a practically robust and fast exact planner in high-locality domains, while retaining expressive temporal value constraints.
 \end{abstract}
 
 %\begin{abstract}
@@ -716,6 +721,7 @@ This section evaluates whether the theoretical locality advantage translates int
 \subsection{Setup}
 
 All experiments were run on an Intel Core i7-10510U (4 cores / 8 threads) machine with 31\,GiB RAM, Ubuntu Linux kernel 5.15, and C++17 implementations compiled with \texttt{g++ 9.4.0} using optimization level \texttt{-O2}.
+Code, benchmark-generation scripts, and experiment artifacts are available at \url{https://github.com/satja/LTL}.
 
 The benchmark set consists of 110 systematically generated instances with problem size $n\in[6,16]$ and ten instances per size. The generation procedure is deterministic and size-ordered, with nontrivial pattern variation per size: damaged-location patterns in Example 1 and Example 2, and service/occupied-cell patterns in Example 3. Each family is generated from the same action/value definitions used in its corresponding example subsection, including the one-charge policy in Example 2 and the source-conditioned lane/move effects in Example 3. Family assignment follows a fixed cyclic pattern over variants, yielding 44 instances from the linear traffic-light family (Example 1), 33 from the charging extension (Example 2), and 33 from the three-lane repair corridor (Example 3). This design provides controlled growth in instance size while preserving the locality assumptions studied in Section \ref{aa}, while also testing whether conclusions remain stable across all three modeling variants rather than only one. In the plots, this means that for each fixed $n$ there are exactly ten benchmark instances.
 
@@ -841,143 +847,65 @@ Overall, our work offers a promising direction for efficient and scalable ethica
 %rhoncus. Maecenas eu arcu ac neque placerat aliquam. Nunc pulvinar
 %massa et mattis lacinia.
 
-%\section{Reproducibility Checklist for JAIR}
+\appendix
+\section{Reproducibility Checklist for JAIR}
 
-%Select the answers that apply to your research -- one per item. 
+Select the answers that apply to this research.
 
-%\subsection*{All articles:}
+\subsection*{All articles}
+\begin{enumerate}
+    \item All claims investigated in this work are clearly stated. [yes]
+    \item Clear explanations are given how the work reported substantiates the claims. [yes]
+    \item Limitations or technical assumptions are stated clearly and explicitly. [yes]
+    \item Conceptual outlines and/or pseudo-code descriptions of the AI methods introduced in this work are provided, and important implementation details are discussed. [yes]
+    \item Motivation is provided for all design choices, including algorithms, implementation choices, parameters, data sets and experimental protocols beyond metrics. [yes]
+\end{enumerate}
 
-%\hh{revised for stylistic consistency:}
-%\begin{enumerate}
-%    \item All claims investigated in this work are clearly stated. 
-%    [yes/partially/no]
-%    \item Clear explanations are given how the work reported substantiates the claims. 
-%    [yes/partially/no]
-%    \item Limitations or technical assumptions are stated clearly and explicitly. 
-%    [yes/partially/no]
-%    \item Conceptual outlines and/or pseudo-code descriptions of the AI methods introduced in this work are provided, and important implementation details are discussed. 
-%    [yes/partially/no/NA]
-%    \item 
-%    Motivation is provided for all design choices, including algorithms, implementation choices, parameters, data sets and experimental protocols beyond metrics.
-%    [yes/partially/no]
-%\end{enumerate}
+\subsection*{Articles containing theoretical contributions}
+Does this paper make theoretical contributions? [yes]
+\begin{enumerate}
+    \item All assumptions and restrictions are stated clearly and formally. [yes]
+    \item All novel claims are stated formally (e.g., in theorem statements). [yes]
+    \item Proofs of all non-trivial claims are provided in sufficient detail to permit verification by readers with a reasonable degree of expertise. [partially]
+    \item Complex formalism, such as definitions or proofs, is motivated and explained clearly. [yes]
+    \item The use of mathematical notation and formalism serves the purpose of enhancing clarity and precision; gratuitous use of mathematical formalism is avoided. [yes]
+    \item Appropriate citations are given for all non-trivial theoretical tools and techniques. [yes]
+\end{enumerate}
 
-%\subsection*{Articles containing theoretical contributions:}
-%Does this paper make theoretical contributions? 
-%[yes/no] 
+\subsection*{Articles reporting on computational experiments}
+Does this paper include computational experiments? [yes]
+\begin{enumerate}
+    \item All source code required for conducting experiments is included in an online appendix or will be made publicly available upon publication of the paper. [yes]
+    \item The source code comes with a license that allows free usage for reproducibility purposes. [yes]
+    \item The source code comes with a license that allows free usage for research purposes in general. [yes]
+    \item Raw, unaggregated data from all experiments is included in an online appendix or will be made publicly available upon publication of the paper. [yes]
+    \item The unaggregated data comes with a license that allows free usage for reproducibility purposes. [yes]
+    \item The unaggregated data comes with a license that allows free usage for research purposes in general. [yes]
+    \item If an algorithm depends on randomness, then the method used for generating random numbers and for setting seeds is described in a way sufficient to allow replication of results. [yes]
+    \item The execution environment for experiments, including hardware and software stack, is described. [yes]
+    \item The evaluation metrics used in experiments are clearly explained and their choice is explicitly motivated. [yes]
+    \item The number of algorithm runs used to compute each result is reported. [yes]
+    \item Reported results have not been ``cherry-picked'' by silently ignoring unsuccessful or unsatisfactory experiments. [yes]
+    \item Analysis of results goes beyond single-dimensional summaries of performance to include measures of variation, confidence, or other distributional information. [yes]
+    \item All (hyper-) parameter settings for the algorithms/methods used in experiments have been reported, along with the rationale or method for determining them. [yes]
+    \item The number and range of (hyper-) parameter settings explored prior to conducting final experiments have been indicated, along with the effort spent on (hyper-) parameter optimisation. [partially]
+    \item Appropriately chosen statistical hypothesis tests are used to establish statistical significance in the presence of noise effects. [yes]
+\end{enumerate}
 
-%If yes, please complete the list below.
+\subsection*{Articles using data sets}
+Does this work rely on one or more data sets (possibly obtained from a benchmark generator or similar software artifact)? [yes]
+\begin{enumerate}
+    \item All newly introduced data sets are included in an online appendix or will be made publicly available upon publication of the paper. [yes]
+    \item The newly introduced data set comes with a license that allows free usage for reproducibility purposes. [yes]
+    \item The newly introduced data set comes with a license that allows free usage for research purposes in general. [yes]
+    \item All data sets drawn from the literature or other public sources are accompanied by appropriate citations. [NA]
+    \item All data sets drawn from the existing literature are publicly available. [NA]
+    \item All new data sets and data sets that are not publicly available are described in detail, including relevant statistics and data collection process if relevant. [yes]
+    \item All methods used for preprocessing, augmenting, batching or splitting data sets are described in detail. [NA]
+\end{enumerate}
 
-%\begin{enumerate}
-%    \item All assumptions and restrictions are stated clearly and formally. 
-%    [yes/partially/no]
-%    \item All novel claims are stated formally (e.g., in theorem statements). 
-%    [yes/partially/no]
-%    \item Proofs of all non-trivial claims are provided in sufficient detail to permit verification by readers with a reasonable degree of expertise (e.g., that expected from a PhD candidate in the same area of AI). [yes/partially/no]
-%    \item
-%    Complex formalism, such as definitions or proofs, is motivated and explained clearly.
-%hh: was:
-%Proof sketches or intuitions are given for complex and/or novel results.
-%    [yes/partially/no]
-%    \item 
-%    The use of mathematical notation and formalism serves the purpose of enhancing clarity and precision; gratuitous use of mathematical formalism (i.e., use that does not enhance clarity or precision) is avoided.
-%    [yes/partially/no]
-%    \item 
-%    Appropriate citations are given for all non-trivial theoretical tools and techniques. 
-%    [yes/partially/no]
-%\end{enumerate}
-
-%\subsection*{Articles reporting on computational experiments:}
-%Does this paper include computational experiments? [yes/no]
-
-%If yes, please complete the list below.
-%\begin{enumerate}
-%    \item 
-%    All source code required for conducting experiments is included in an online appendix 
-%    or will be made publicly available upon publication of the paper.
-%    The online appendix follows best practices for source code readability and documentation as well as for long-term accessibility.
-%    [yes/partially/no]
-%    \item The source code comes with a license that
-%    allows free usage for reproducibility purposes.
-%    [yes/partially/no]
-%    \item The source code comes with a license that
-%    allows free usage for research purposes in general.
-%    [yes/partially/no]
-%    \item 
-%    Raw, unaggregated data from all experiments is included in an online appendix 
-%    or will be made publicly available upon publication of the paper.
-%    The online appendix follows best practices for long-term accessibility.
-%    [yes/partially/no]
-%    \item The unaggregated data comes with a license that
-%    allows free usage for reproducibility purposes.
-%    [yes/partially/no]
-%    \item The unaggregated data comes with a license that
-%    allows free usage for research purposes in general.
-%    [yes/partially/no]
-%    \item If an algorithm depends on randomness, then the method used for generating random numbers and for setting seeds is described in a way sufficient to allow replication of results. 
-%    [yes/partially/no/NA]
-%    \item The execution environment for experiments, the computing infrastructure (hardware and software) used for running them, is described, including GPU/CPU makes and models; amount of memory (cache and RAM); make and version of operating system; names and versions of relevant software libraries and frameworks. 
-%    [yes/partially/no]
-%    \item 
-%    The evaluation metrics used in experiments are clearly explained and their choice is explicitly motivated. 
-%    [yes/partially/no]
-%    \item 
-%    The number of algorithm runs used to compute each result is reported. 
-%    [yes/no]
-%    \item 
-%    Reported results have not been ``cherry-picked'' by silently ignoring unsuccessful or unsatisfactory experiments. 
-%    [yes/partially/no]
-%    \item 
-%    Analysis of results goes beyond single-dimensional summaries of performance (e.g., average, median) to include measures of variation, confidence, or other distributional information. 
-%    [yes/no]
-%    \item 
-%    All (hyper-) parameter settings for 
-%    the algorithms/methods used in experiments have been reported, along with the rationale or method for determining them. 
-%    [yes/partially/no/NA]
-%    \item 
-%    The number and range of (hyper-) parameter settings explored prior to conducting final experiments have been indicated, along with the effort spent on (hyper-) parameter optimisation. 
-%    [yes/partially/no/NA]
-%    \item 
-%    Appropriately chosen statistical hypothesis tests are used to establish statistical significance
-%    in the presence of noise effects.
-%    [yes/partially/no/NA]
-%\end{enumerate}
-
-
-%\subsection*{Articles using data sets:}
-%Does this work rely on one or more data sets (possibly obtained from a benchmark generator or similar software artifact)? 
-%[yes/no]
-
-%If yes, please complete the list below.
-%\begin{enumerate}
-%    \item 
-%    All newly introduced data sets 
-%    are included in an online appendix 
-%    or will be made publicly available upon publication of the paper.
-%    The online appendix follows best practices for long-term accessibility with a license
-%    that allows free usage for research purposes.
-%    [yes/partially/no/NA]
-%    \item The newly introduced data set comes with a license that
-%    allows free usage for reproducibility purposes.
-%    [yes/partially/no]
-%    \item The newly introduced data set comes with a license that
-%    allows free usage for research purposes in general.
-%    [yes/partially/no]
-%    \item All data sets drawn from the literature or other public sources (potentially including authors' own previously published work) are accompanied by appropriate citations.
-%    [yes/no/NA]
-%    \item All data sets drawn from the existing literature (potentially including authors’ own previously published work) are publicly available. [yes/partially/no/NA]
-    %\item All data sets that are not publicly available are described in detail.
-    %[yes/partially/no/NA]
-%    \item All new data sets and data sets that are not publicly available are described in detail, including relevant statistics, the data collection process and annotation process if relevant.
-%    [yes/partially/no/NA]
-%    \item 
-%    All methods used for preprocessing, augmenting, batching or splitting data sets (e.g., in the context of hold-out or cross-validation)
- %   are described in detail. [yes/partially/no/NA]
-%\end{enumerate}
-
-%\subsection*{Explanations on any of the answers above (optional):}
-
-%[Text here; please keep this brief.]
+\subsection*{Explanations on answers above (optional)}
+Code and benchmark artifacts are available in the project repository and released under the MIT License.
 
 \end{document}
 \endinput

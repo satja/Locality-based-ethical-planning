@@ -8,6 +8,10 @@ This repo contains three separate programs:
 
 There are also scripts for systematic test generation, benchmarking, and plotting.
 
+License:
+- This repository is released under the MIT License (see `LICENSE`).
+- Generated benchmark artifacts in this repository are released under the same license.
+
 ## 0) Approaches and Comparisons
 
 This repo now supports three clearly distinct planning approaches for comparison:
