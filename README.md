@@ -1,12 +1,17 @@
-# LTL Planner + Validator
+# Locality-based ethical planning
 
-This repo contains three separate programs:
-- `planner.cpp`: the locality-based planner (fast, intended algorithm).
-- `bruteforce-planner.cpp`: a brute-force baseline (slow, with a timeout).
-- `ltlf-progress-planner.cpp`: an automata/progression LTLf baseline.
-- `validate.cpp`: the independent validator (checks correctness only).
+This repository contains the code and paper sources for locality-based ethical
+planning with linear temporal logic values.
 
-There are also scripts for systematic test generation, benchmarking, and plotting.
+Main components:
+- `planner.cpp`: the locality-based planner used in the paper.
+- `bruteforce-planner.cpp`: a brute-force planning baseline.
+- `ltlf-progress-planner.cpp`: an automata/progression `LTL_f` baseline.
+- `validate.cpp`: the independent validator.
+- `score-plan.cpp`: the scorer for weighted conflict-resolution outputs.
+
+There are also scripts for systematic test generation, benchmarking, scoring,
+and plotting.
 
 License:
 - This repository is released under the MIT License (see `LICENSE`).
