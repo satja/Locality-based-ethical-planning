@@ -1,0 +1,3 @@
+- We solve locality-constrained LTL-based ethical planning in polynomial time.
+- We extend the algorithm to shortest-plan search and conflict resolution.
+- The method significantly outperforms the automata/progression baselines.
